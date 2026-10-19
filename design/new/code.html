@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Actline - Tạo Dự Án Mới Bằng Ý Tưởng AI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed-variant": "#224f3c",
+            "tertiary-fixed": "#d5e3fc",
+            "on-error-container": "#93000a",
+            "outline-variant": "#c0c9c2",
+            "on-tertiary-fixed-variant": "#3a485b",
+            "on-background": "#1a1c1a",
+            "on-tertiary-container": "#b7c5dd",
+            "primary-container": "#2d5a46",
+            "secondary-fixed-dim": "#ffb68c",
+            "on-secondary": "#ffffff",
+            "error": "#ba1a1a",
+            "surface-variant": "#e3e2e0",
+            "tertiary": "#2d3b4e",
+            "surface-dim": "#dbdad7",
+            "surface-container-low": "#f4f3f0",
+            "on-primary-container": "#9fcfb6",
+            "on-surface": "#1a1c1a",
+            "secondary-fixed": "#ffdbc9",
+            "surface-container-high": "#e9e8e5",
+            "inverse-on-surface": "#f2f1ee",
+            "on-tertiary-fixed": "#0d1c2e",
+            "outline": "#717973",
+            "primary": "#134230",
+            "surface-container-highest": "#e3e2e0",
+            "inverse-primary": "#a1d1b8",
+            "on-primary-fixed": "#002114",
+            "surface-tint": "#3a6752",
+            "secondary": "#994703",
+            "error-container": "#ffdad6",
+            "primary-fixed": "#bceed3",
+            "surface-container-lowest": "#ffffff",
+            "on-error": "#ffffff",
+            "primary-fixed-dim": "#a1d1b8",
+            "on-surface-variant": "#414944",
+            "inverse-surface": "#2f312f",
+            "on-tertiary": "#ffffff",
+            "surface-container": "#efeeeb",
+            "tertiary-fixed-dim": "#b9c7df",
+            "background": "#faf9f6",
+            "on-secondary-fixed-variant": "#753400",
+            "on-secondary-fixed": "#321200",
+            "on-primary": "#ffffff",
+            "surface": "#faf9f6",
+            "tertiary-container": "#445266",
+            "surface-bright": "#faf9f6",
+            "on-secondary-container": "#6d3000",
+            "secondary-container": "#fc934f"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "2rem",
+            "gutter": "1.25rem",
+            "space-2xl": "3rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.25rem",
+            "margin-lg": "2.5rem",
+            "space-md": "0.875rem",
+            "margin-md": "1.75rem",
+            "gutter-lg": "1.75rem",
+            "margin": "1rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Space Grotesk"],
+            "body-sm": ["Manrope"],
+            "label-sm": ["JetBrains Mono"],
+            "label-md": ["JetBrains Mono"],
+            "title-sm": ["Manrope"],
+            "body-lg": ["Manrope"],
+            "headline-xl": ["Space Grotesk"],
+            "body-md": ["Manrope"],
+            "headline-lg-mobile": ["Space Grotesk"],
+            "headline-xl-mobile": ["Space Grotesk"],
+            "caption": ["Manrope"],
+            "headline-lg": ["Space Grotesk"],
+            "title-md": ["Manrope"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-sm": ["13px", { "lineHeight": "19px", "fontWeight": "400" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "title-sm": ["15px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+            "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-xl-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "title-md": ["17px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .tactile-card {
+      box-shadow: 0 1px 3px rgba(30, 38, 33, 0.04), 0 4px 12px rgba(30, 38, 33, 0.02);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c0c9c2;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TOP APP BAR -->
+<header class="bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 z-50 border-b border-surface-variant dark:border-outline-variant/30 shadow-sm dark:shadow-none w-full px-space-xl h-16 flex items-center justify-between sticky"><!-- Brand & Project Switcher -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center font-headline-md font-bold text-lg shadow-sm">A</span>
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-primary dark:text-inverse-primary">Actline</span>
+<span class="w-2 h-2 rounded-full bg-[#1b8a5a] shadow-[0_0_6px_rgba(27,138,90,0.5)]"></span>
+</div>
+<div class="h-5 w-px bg-surface-variant"></div>
+<!-- Current Workflow Indicator / Switcher Trigger -->
+<button class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-surface-variant text-on-surface text-body-sm font-medium hover:bg-surface-container-high transition-colors cursor-pointer group" title="Đổi chế độ làm việc">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Chế độ:</span>
+<span class="font-title-sm text-title-sm text-primary font-semibold">Tạo dự án mới với AI</span>
+<span class="material-symbols-outlined text-outline text-base group-hover:text-primary transition-colors" data-icon="unfold_more">unfold_more</span>
+</button>
+</div>
+<!-- Navigation Tabs -->
+<nav class="hidden lg:flex items-center gap-space-lg h-full">
+<a class="text-on-surface-variant font-body-md text-[13px] hover:text-on-surface flex items-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]" data-icon="calendar_today">calendar_today</span>
+<span class="">Lộ trình hôm nay</span>
+</a>
+<a class="text-on-surface-variant font-body-md text-[13px] hover:text-on-surface flex items-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]" data-icon="timeline">timeline</span>
+<span class="">Dòng thời gian</span>
+</a>
+<a class="text-on-surface-variant font-body-md text-[13px] hover:text-on-surface flex items-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]" data-icon="inventory_2">inventory_2</span>
+<span class="">Kho vật tư</span>
+</a>
+<a class="text-on-surface-variant font-body-md text-[13px] hover:text-on-surface flex items-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]" data-icon="photo_library">photo_library</span>
+<span class="">Nhật ký ảnh</span>
+</a>
+</nav>
+<!-- Trailing Action Cluster -->
+<div class="flex items-center gap-space-md">
+<!-- Emergency Alert Trigger (Báo sự cố) -->
+<!-- Trung tâm trợ giúp -->
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors hidden sm:block" title="Trợ giúp" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+</button>
+<!-- Cài đặt -->
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Cài đặt &amp; Cấu hình" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="tune">tune</span>
+</button>
+<!-- User Avatar -->
+<div class="flex items-center pl-1 border-l border-surface-variant">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/40 cursor-pointer" title="Tài khoản">
+<img class="w-full h-full object-cover" data-alt="Chân dung kỹ sư nông nghiệp Actline" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzvkz2YHiYXjUiRpM3OgzQlOnFxpjJOqUiMyLTRvWKaetgU4JN87S7o1lPeaCCnPXEX0DjQbpJy2-9D-HfurturX3OpbJIpsE7T7CZUPLmUlD5KchTHZXCm25HaJ7dLfglJ8thqALhn6pyLq6ALJZTdyp3XQbyNKP9CLFIBU0v1fTLuM3ArQLS_0qFbnxmZyFXHG4OpqVBLe5yWI_Y67gldOQaCtagcq9vlM2KeUuipMqY4iogyg"/>
+</div>
+</div>
+</div></header>
+<!-- MAIN CANVAS -->
+<main class="flex-1 w-full max-w-[1440px] mx-auto px-4 md:px-8 py-8 flex flex-col gap-space-2xl">
+<!-- SECTION 1: AI IDEA GENERATOR INPUT MODULE -->
+<section class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 md:p-8 tactile-card relative overflow-hidden">
+<!-- Ambient decorative stamp -->
+<div class="absolute -right-10 -bottom-10 w-64 h-64 bg-primary-fixed/20 rounded-full blur-3xl pointer-events-none"></div>
+<div class="max-w-4xl mx-auto flex flex-col gap-6">
+<!-- Header Text Block -->
+<div class="flex flex-col gap-2">
+<div class="inline-flex items-center gap-2 self-start px-2.5 py-1 rounded-md bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome" style='font-variation-settings: "FILL" 1;'>auto_awesome</span>
+<span class="">ACTLINE ENGINE v3.4 · ADAPTIVE BLUEPRINT SYNTHESIS</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">
+            Biến ý tưởng thành kế hoạch hành động thực tế
+          </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+            Chỉ cần nhập mục tiêu của bạn (trồng dưa ban công, tự chế robot Arduino, làm bánh mì sourdough, học vẽ tranh thủy mặc...). AI sẽ bóc tách lộ trình chi tiết từng ngày, danh mục vật tư cần mua trước và ngân sách dự kiến.
+          </p>
+</div>
+<!-- Prompt Textarea & Primary Interaction -->
+<div class="relative bg-surface rounded-xl border-2 border-surface-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all p-4 shadow-inner">
+<textarea class="w-full bg-transparent border-0 resize-none p-0 focus:ring-0 text-on-surface font-body-lg placeholder:text-outline/70" id="idea-prompt" placeholder="Ví dụ: Tôi muốn trồng 5 gốc dưa leo baby leo giàn ở ban công hướng Đông 3m², thu hoạch sau 45 ngày với ngân sách tiết kiệm nhất..." rows="3">Tôi muốn trồng 5 gốc dưa leo baby Nhật leo giàn ở ban công chung cư hướng Đông 3.5m², dự kiến thu hoạch sau 45 ngày, chăm sóc tự nhiên không phân hóa học.</textarea>
+<div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-surface-variant/80 mt-2">
+<div class="flex items-center gap-2 text-on-surface-variant text-body-sm">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="tips_and_updates">tips_and_updates</span>
+<span class="font-label-sm text-label-sm text-outline">Đã nạp tri thức: Nông học đô thị, Vi sinh đất, Canh tác vi khí hậu</span>
+</div>
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-[#234737] text-on-primary font-title-sm text-title-sm transition-all shadow-sm active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="smart_toy">smart_toy</span>
+<span class="">Khởi tạo kế hoạch hành động với AI</span>
+<span class="material-symbols-outlined text-base ml-0.5" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Suggestion Pills -->
+<div class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Hoặc thử các mẫu kế hoạch điển hình:</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-variant text-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="psychiatry">psychiatry</span>
+              Trồng dưa lưới ban công
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-variant text-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="precision_manufacturing">precision_manufacturing</span>
+              Chế tạo Robot dò đường Arduino
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-variant text-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="architecture">architecture</span>
+              Làm sa bàn Cyberpunk 1:35
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-variant text-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="set_meal">set_meal</span>
+              Nuôi cá Guppy &amp; thủy sinh
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-variant text-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm text-primary-container" data-icon="directions_run">directions_run</span>
+              Chạy marathon 21km sau 3 tháng
+            </button>
+</div>
+</div>
+<!-- Parameter Selectors -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-xl bg-surface-container-low border border-surface-variant">
+<!-- Param 1: Thời gian -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="event_repeat">event_repeat</span>
+              Thời gian mục tiêu
+            </label>
+<div class="relative">
+<select class="w-full bg-surface border border-surface-variant rounded-lg px-3 py-2 text-body-sm font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+<option selected="">45 ngày (Chuẩn chu kỳ)</option>
+<option>30 ngày (Gấp rút)</option>
+<option>60 ngày (Chắc chắn, nhiều trái)</option>
+</select>
+</div>
+</div>
+<!-- Param 2: Thời gian rảnh -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="timer">timer</span>
+              Thời gian rảnh mỗi ngày
+            </label>
+<div class="relative">
+<select class="w-full bg-surface border border-surface-variant rounded-lg px-3 py-2 text-body-sm font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+<option>15 - 20 phút/ngày</option>
+<option selected="">30 - 45 phút/ngày (Khuyến nghị)</option>
+<option>60+ phút/ngày (Chuyên sâu)</option>
+</select>
+</div>
+</div>
+<!-- Param 3: Ngân sách -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="payments">payments</span>
+              Mức ngân sách tối đa
+            </label>
+<div class="relative">
+<input class="w-full bg-surface border border-surface-variant rounded-lg px-3 py-2 text-body-sm font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary font-label-md" type="text" value="1.500.000 VNĐ"/>
+</div>
+</div>
+<!-- Param 4: Trình độ -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="school">school</span>
+              Mức độ kinh nghiệm
+            </label>
+<div class="relative">
+<select class="w-full bg-surface border border-surface-variant rounded-lg px-3 py-2 text-body-sm font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+<option selected="">Mới bắt đầu (Kèm hướng dẫn tỉ mỉ)</option>
+<option>Đã có kinh nghiệm cơ bản</option>
+<option>Thợ lành nghề / Pro Maker</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 2: LIVE ACTION PLAN PREVIEW (AI GENERATED BLUEPRINT) -->
+<section class="flex flex-col gap-6">
+<!-- Section Header Indicator -->
+<div class="flex items-center justify-between pb-2 border-b border-surface-variant">
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary-fixed"></span>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface tracking-tight">
+            Bản phác thảo kế hoạch hành động đã tạo (Live Blueprint)
+          </h2>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed uppercase">Đã đồng bộ AI</span>
+</div>
+<div class="text-on-surface-variant font-label-sm text-label-sm">
+          Phiên bản: v1.0.4 · Tự động tinh chỉnh thích ứng
+        </div>
+</div>
+<!-- Project Summary Bento Header -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 tactile-card grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="md:col-span-2 flex flex-col justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Tên dự án AI đề xuất</span>
+<h3 class="font-headline-md text-headline-md font-bold text-primary mt-1">
+              Vườn Dưa Leo Baby Ban Công Nhật Bản (Thủy thổ hữu cơ)
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">
+              Mô hình 5 gốc dưa leo giàn A hướng Đông. Quy trình vi sinh khép kín sử dụng xơ dừa lên men và phân trùn quế ép viên, tối ưu nắng sớm 4 tiếng/ngày.
+            </p>
+</div>
+<div class="flex items-center gap-3 mt-4 pt-4 border-t border-surface-variant">
+<span class="inline-flex items-center gap-1 text-body-sm font-medium text-on-surface">
+<span class="material-symbols-outlined text-base text-primary" data-icon="location_on">location_on</span> Ban công 3.5m²
+            </span>
+<span class="text-outline">·</span>
+<span class="inline-flex items-center gap-1 text-body-sm font-medium text-on-surface">
+<span class="material-symbols-outlined text-base text-secondary" data-icon="wb_sunny">wb_sunny</span> Nắng hướng Đông
+            </span>
+<span class="text-outline">·</span>
+<span class="inline-flex items-center gap-1 text-body-sm font-medium text-on-surface">
+<span class="material-symbols-outlined text-base text-primary" data-icon="eco">eco</span> 100% Thuần sinh học
+            </span>
+</div>
+</div>
+<!-- Metric Tile 1: Thời gian & Giai đoạn -->
+<div class="bg-surface-container-low border border-surface-variant rounded-lg p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase">Thời lượng lộ trình</span>
+<span class="material-symbols-outlined text-primary text-xl" data-icon="calendar_month">calendar_month</span>
+</div>
+<div class="my-2">
+<div class="font-headline-lg text-headline-lg font-bold text-on-surface">45 <span class="text-body-md font-normal text-on-surface-variant">Ngày</span></div>
+<p class="font-label-sm text-label-sm text-primary font-medium mt-1">4 Giai đoạn phát triển chính</p>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[25%] rounded-full"></div>
+</div>
+</div>
+<!-- Metric Tile 2: Ngân sách & Nhịp hàng ngày -->
+<div class="bg-surface-container-low border border-surface-variant rounded-lg p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase">Dự toán ngân sách</span>
+<span class="material-symbols-outlined text-secondary text-xl" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div class="my-2">
+<div class="font-headline-lg text-headline-lg font-bold text-on-surface">1.200.000 <span class="text-body-md font-normal text-on-surface-variant">đ</span></div>
+<p class="font-label-sm text-label-sm text-secondary font-medium mt-1">Tiết kiệm 300.000đ so với dự trù</p>
+</div>
+<div class="pt-2 border-t border-surface-variant/80 flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span class="">Nhịp độ:</span>
+<span class="font-semibold text-on-surface">~35-45 phút / ngày</span>
+</div>
+</div>
+</div><!-- Predicted IoT Hardware Setup Module -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 tactile-card">
+<div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-surface-variant">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[19px]" data-icon="hub">hub</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm font-bold text-on-surface flex items-center gap-2">
+          Tích hợp phần cứng IoT dự kiến (Predicted Hardware Kit)
+          <span class="font-label-sm text-[10px] bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full font-mono">AI Đề xuất</span>
+</h4>
+<p class="font-caption text-[11px] text-on-surface-variant">Tự động kết nối với hub điều khiển và trạm cảm biến ngay khi kích hoạt dự án.</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low border border-surface-variant text-[11px] font-label-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-[#1b8a5a] shadow-[0_0_6px_rgba(27,138,90,0.5)]"></span>
+        Sẵn sàng kết nối khi bắt đầu
+      </span>
+<button class="px-2.5 py-1 rounded-lg border border-surface-variant bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-[11px] font-medium transition-colors" title="Tùy biến phần cứng">
+        Cấu hình cảm biến
+      </button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+<div class="p-3 rounded-lg bg-surface-container-low border border-surface-variant/60 flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest border border-surface-variant flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="router">router</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[10px] text-outline font-mono">GATEWAY</span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#1b8a5a]"></span>
+</div>
+<div class="font-title-sm text-[13px] font-semibold text-on-surface truncate">ESP32 Hub v2 Master</div>
+<div class="font-caption text-[10px] text-on-surface-variant truncate">WiFi + BLE · Ban công T4</div>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low border border-surface-variant/60 flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest border border-surface-variant flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="water_drop">water_drop</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[10px] text-outline font-mono">ĐẤT RỄ</span>
+<span class="font-label-sm text-[10px] text-secondary font-mono">ADC</span>
+</div>
+<div class="font-title-sm text-[13px] font-semibold text-on-surface truncate">Đầu dò ẩm đất điện dung</div>
+<div class="font-caption text-[10px] text-on-surface-variant truncate">2 điểm đo ngầm rễ</div>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low border border-surface-variant/60 flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest border border-surface-variant flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="thermostat">thermostat</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[10px] text-outline font-mono">VI KHÍ HẬU</span>
+<span class="font-label-sm text-[10px] text-primary font-mono">I2C</span>
+</div>
+<div class="font-title-sm text-[13px] font-semibold text-on-surface truncate">Cảm biến nhiệt ẩm SHT31</div>
+<div class="font-caption text-[10px] text-on-surface-variant truncate">Đo môi trường tán lá</div>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low border border-surface-variant/60 flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest border border-surface-variant flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="valve">valve</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[10px] text-outline font-mono">ĐIỀU KHIỂN</span>
+<span class="font-label-sm text-[10px] text-primary font-mono">12V DC</span>
+</div>
+<div class="font-title-sm text-[13px] font-semibold text-on-surface truncate">Van Solenoid tưới nhỏ giọt</div>
+<div class="font-caption text-[10px] text-on-surface-variant truncate">Tự đóng mở theo chu kỳ AI</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 4 PHASES BREAKDOWN CAROUSEL/GRID -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h4 class="font-title-md text-title-md font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="linear_scale">linear_scale</span>
+            Chuỗi 4 Giai Đoạn Thực Thi (Milestone Progression)
+          </h4>
+<span class="text-body-sm text-outline">Nhấp vào từng giai đoạn để mở rộng việc chi tiết</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"><!-- Phase 1 (Active Preview) -->
+<div class="bg-surface-container-lowest border-2 border-primary rounded-xl p-4 tactile-card relative flex flex-col justify-between shadow-sm ring-2 ring-primary/20">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[11px] font-mono text-primary font-bold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+      N01 → N07
+    </span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-[11px] font-bold">Giai đoạn 1</span>
+</div>
+<div class="mt-2">
+<h5 class="font-title-sm text-title-sm font-bold text-on-surface">Làm đất, ủ hạt &amp; Gieo mầm</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5">
+      Xử lý giá thể khử nấm, ủ hạt nứt nanh và kiểm soát độ ẩm khay ươm bóng râm.
+    </p>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-center justify-between text-body-sm">
+<span class="font-label-sm text-[11px] text-outline font-mono">4 Mốc việc cốt lõi</span>
+<span class="text-primary font-bold flex items-center text-xs cursor-pointer hover:underline">
+      Xem chi tiết <span class="material-symbols-outlined text-sm ml-0.5" data-icon="chevron_right">chevron_right</span>
+</span>
+</div>
+</div>
+<!-- Phase 2 -->
+<div class="bg-surface-container-low border border-surface-variant rounded-xl p-4 flex flex-col justify-between hover:border-outline-variant transition-colors cursor-pointer group">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[11px] font-mono text-outline">N08 → N15</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-[11px] font-medium">Giai đoạn 2</span>
+</div>
+<div class="mt-2">
+<h5 class="font-title-sm text-title-sm font-bold text-on-surface group-hover:text-primary transition-colors">Cây con, leo giàn &amp; Tỉa chồi</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5">
+      Sang chậu 20L, dựng giàn chữ A góc 75°, bấm ngọn nhánh phụ từ nách lá thứ 1 đến 5.
+    </p>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-center justify-between text-body-sm">
+<span class="font-label-sm text-[11px] text-outline font-mono">5 Mốc chuẩn bị</span>
+<span class="material-symbols-outlined text-outline text-base group-hover:text-primary transition-colors" data-icon="lock_clock">lock_clock</span>
+</div>
+</div>
+<!-- Phase 3 (Centered Peak Blooming Phase like N16 in Screen 4) -->
+<div class="bg-surface-container-low border border-surface-variant rounded-xl p-4 flex flex-col justify-between hover:border-outline-variant transition-colors cursor-pointer group">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[11px] font-mono text-outline">N16 → N28</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-[11px] font-medium">Giai đoạn 3</span>
+</div>
+<div class="mt-2">
+<div class="flex items-center gap-1.5">
+<h5 class="font-title-sm text-title-sm font-bold text-on-surface group-hover:text-primary transition-colors">Kích hoa, thụ phấn &amp; Neo quả</h5>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5">
+      Tăng Kali hữu cơ, thụ phấn trợ lực buổi sáng (7h-9h30) và tỉa chồi nách mắt lá 1-5.
+    </p>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-center justify-between text-body-sm">
+<span class="font-label-sm text-[11px] text-outline font-mono">6 Mốc kỹ thuật (Đỉnh N16)</span>
+<span class="material-symbols-outlined text-outline text-base group-hover:text-primary transition-colors" data-icon="lock_clock">lock_clock</span>
+</div>
+</div>
+<!-- Phase 4 (Harvest Target) -->
+<div class="bg-surface-container-low border border-surface-variant rounded-xl p-4 flex flex-col justify-between hover:border-outline-variant transition-colors cursor-pointer group">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[11px] font-mono text-outline">N29 → N45</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] font-bold">Giai đoạn 4</span>
+</div>
+<div class="mt-2">
+<h5 class="font-title-sm text-title-sm font-bold text-on-surface group-hover:text-secondary transition-colors">Nuôi quả ngọt, bọc trái &amp; Thu hoạch</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5">
+      Thu hái dưa sáng sớm khi đạt chiều dài 12-14cm, tiếp tục dưỡng dây kéo dài đợt 2.
+    </p>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-center justify-between text-body-sm">
+<span class="font-label-sm text-[11px] text-outline font-mono">3 Lượt thu đợt 1 (Đích N45)</span>
+<span class="material-symbols-outlined text-secondary text-base" data-icon="flag">flag</span>
+</div>
+</div></div>
+</div>
+<!-- WORK BENCH: TWO COLUMNS (DAILY BLUEPRINT SAMPLE & BOM SUPPLIES) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT: DAILY BLUEPRINT SAMPLE (DAY 1 EXECUTION MOCKUP) (7 COLS) -->
+<div class="lg:col-span-7 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="task_alt">task_alt</span>
+<h4 class="font-title-md text-title-md font-bold text-on-surface">Mẫu việc ngày đầu tiên (Ngày 1 / 45)</h4>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container px-2.5 py-1 rounded text-on-surface-variant">Tổng thời lượng: 55 phút</span>
+</div>
+<!-- Task Card 1 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 tactile-card flex flex-col gap-4">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded border-2 border-outline-variant flex items-center justify-center text-primary mt-0.5 cursor-pointer hover:border-primary transition-colors">
+<!-- Unchecked square -->
+</div>
+<div>
+<h5 class="font-title-sm text-title-sm font-bold text-on-surface">
+                    Bước 1: Ngâm ủ hạt giống dưa leo baby trong nước ấm 2 sôi 3 lạnh
+                  </h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                    Chuẩn bị nước pha tỉ lệ (nhiệt độ ~45°C - 50°C), ngâm ngập 8 hạt giống (dự phòng 3 hạt kẹ) trong 4 tiếng.
+                  </p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-low px-2 py-1 rounded text-on-surface-variant shrink-0">⏱ 15m chuẩn bị</span>
+</div>
+<!-- Rationale 'Why' Tray -->
+<div class="bg-surface-container-low rounded-lg p-3.5 border-l-4 border-primary text-body-sm flex flex-col gap-1">
+<span class="font-label-sm text-label-sm font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="psychology">psychology</span>
+                LÝ DO KỸ THUẬT (RATIONALE):
+              </span>
+<p class="text-on-surface-variant italic">
+                Nhiệt độ ấm kích hoạt enzyme phá vỡ trạng thái ngủ sâu của vỏ hạt dưa, nâng tỉ lệ nảy mầm từ 60% lên trên 92% trong khí hậu nhà phố.
+              </p>
+</div>
+<!-- Micro Steps -->
+<div class="flex flex-col gap-2 pt-2 border-t border-surface-variant">
+<div class="flex items-center gap-3 text-body-sm">
+<span class="font-label-sm text-label-sm font-bold text-outline">01</span>
+<span class="">Pha 200ml nước sôi với 300ml nước lọc nguội vào ly thủy tinh sạch.</span>
+</div>
+<div class="flex items-center gap-3 text-body-sm">
+<span class="font-label-sm text-label-sm font-bold text-outline">02</span>
+<span class="">Thả hạt vào, hạt nào nổi sau 10 phút dùng tăm ấn chìm hoặc loại bỏ nếu rỗng ruột.</span>
+</div>
+</div>
+</div>
+<!-- Task Card 2 -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 tactile-card flex flex-col gap-4">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded border-2 border-outline-variant flex items-center justify-center text-primary mt-0.5 cursor-pointer hover:border-primary transition-colors">
+<!-- Unchecked square -->
+</div>
+<div>
+<h5 class="font-title-sm text-title-sm font-bold text-on-surface">
+                    Bước 2: Phối trộn giá thể khay ươm (Xơ dừa đã xử lý chát + Phân trùn quế)
+                  </h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                    Trộn theo tỉ lệ 70% mụn dừa ngậm ẩm + 30% trùn quế sàng mịn. Chia đều vào 6 bầu ươm 8x8cm.
+                  </p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-low px-2 py-1 rounded text-on-surface-variant shrink-0">⏱ 40m thao tác</span>
+</div>
+<!-- Photo Proof Box -->
+<div class="flex items-center gap-4 p-3 bg-surface rounded-lg border border-dashed border-outline-variant">
+<div class="w-14 h-14 rounded-lg bg-surface-container flex items-center justify-center text-outline shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="photo_camera">photo_camera</span>
+</div>
+<div class="flex-1">
+<span class="font-title-sm text-title-sm text-on-surface block">Chụp ảnh kiểm tra độ ẩm giá thể</span>
+<span class="font-body-sm text-body-sm text-outline">Nắm chặt tay giá thể không chảy nước rỉ kẽ ngón tay là đạt chuẩn.</span>
+</div>
+<button class="px-3 py-1.5 rounded-lg border border-surface-variant bg-surface-container-lowest hover:bg-surface-container text-body-sm font-medium text-on-surface">
+                Tải ảnh lên
+              </button>
+</div>
+</div>
+</div>
+<!-- RIGHT: AUTO-GENERATED BOM / ADVANCE SUPPLIES & RISK FORECAST (5 COLS) -->
+<div class="lg:col-span-5 flex flex-col gap-6">
+<!-- SUPPLIES CHECKLIST -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-5 tactile-card flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-xl" data-icon="shopping_basket">shopping_basket</span>
+<h4 class="font-title-md text-title-md font-bold text-on-surface">Vật tư cần chuẩn bị trước</h4>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-semibold uppercase">
+                6 Mục BOM
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              AI đã lọc chính xác theo diện tích ban công 3.5m² để tránh dư thừa lãng phí:
+            </p>
+<!-- Supplies List -->
+<div class="flex flex-col divide-y divide-surface-variant">
+<!-- Item 1 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<div>
+<span class="font-body-sm font-semibold text-on-surface block">Hạt giống dưa leo baby F1 Nhật</span>
+<span class="font-label-sm text-label-sm text-outline">Gói 10 hạt · Tỉ lệ nảy mầm &gt;90%</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md font-bold text-on-surface block">35.000 đ</span>
+<span class="font-label-sm text-label-sm text-primary">Mua trước N1</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<div>
+<span class="font-body-sm font-semibold text-on-surface block">Bao mụn xơ dừa đã khử chát (50L)</span>
+<span class="font-label-sm text-label-sm text-outline">Đã ngâm xả EC &lt; 0.5mS/cm</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md font-bold text-on-surface block">90.000 đ</span>
+<span class="font-label-sm text-label-sm text-primary">Mua trước N1</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<div>
+<span class="font-body-sm font-semibold text-on-surface block">Phân trùn quế nguyên chất PB01 (10kg)</span>
+<span class="font-label-sm text-label-sm text-outline">Bổ sung vi sinh cố định đạm</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md font-bold text-on-surface block">85.000 đ</span>
+<span class="font-label-sm text-label-sm text-primary">Mua trước N1</span>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<div>
+<span class="font-body-sm font-semibold text-on-surface block">5 Thùng thông minh đáy kép 20L</span>
+<span class="font-label-sm text-label-sm text-outline">Chống úng ngập, có khoang trữ nước</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md font-bold text-on-surface block">320.000 đ</span>
+<span class="font-label-sm text-label-sm text-secondary">Cần trước N7</span>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<div>
+<span class="font-body-sm font-semibold text-on-surface block">Bộ cọc thép bọc nhựa phi 11 + Lưới leo giàn</span>
+<span class="font-label-sm text-label-sm text-outline">Cao 1.8m, mắt lưới 15x15cm</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md font-bold text-on-surface block">240.000 đ</span>
+<span class="font-label-sm text-label-sm text-secondary">Cần trước N8</span>
+</div>
+</div>
+<!-- Item 6 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<div>
+<span class="font-body-sm font-semibold text-on-surface block">Chế phẩm Trichoderma &amp; Dầu Neem ép lạnh</span>
+<span class="font-label-sm text-label-sm text-outline">Phòng bệnh sương mai và bọ trĩ</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md font-bold text-on-surface block">115.000 đ</span>
+<span class="font-label-sm text-label-sm text-outline">Cần trước N14</span>
+</div>
+</div>
+</div>
+<!-- Supply quick actions -->
+<!-- Estimated Budget & Incident Contingency Buffer -->
+<div class="p-3 rounded-lg bg-surface-container-low border border-surface-variant flex flex-col gap-2">
+<div class="flex items-center justify-between font-label-sm text-[11px]">
+<span class="text-outline font-medium">Dự toán vật tư cơ bản:</span>
+<span class="font-mono font-bold text-on-surface">885.000 đ</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-[11px]">
+<span class="text-outline flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+      Quỹ dự phòng sự cố &amp; sâu bệnh:
+    </span>
+<span class="font-mono font-bold text-error">315.000 đ</span>
+</div>
+<div class="pt-1.5 border-t border-surface-variant flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-primary">Tổng gói triển khai:</span>
+<span class="font-mono font-bold text-on-surface">1.200.000 đ</span>
+</div>
+</div><div class="flex items-center gap-2 pt-2">
+<button class="flex-1 py-2 px-3 rounded-lg bg-surface-container border border-surface-variant hover:bg-surface-container-high text-body-sm font-medium text-on-surface flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-base" data-icon="file_download">file_download</span>
+                Tải danh sách mua sắm
+              </button>
+<button class="py-2 px-3 rounded-lg border border-surface-variant bg-surface hover:bg-surface-container text-body-sm text-on-surface-variant transition-colors">
+                Đánh dấu đã có sẵn
+              </button>
+</div>
+</div>
+<!-- CONTINGENCY & INCIDENT RISK FORECAST (AI CẢNH BÁO RỦI RO & BÁO SỰ CỐ) -->
+<div class="bg-surface-container-lowest border border-amber-200 dark:border-amber-900/40 rounded-xl p-5 tactile-card flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary-container"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-xl" data-icon="shield_with_heart" style='font-variation-settings: "FILL" 1;'>shield_with_heart</span>
+<h4 class="font-title-md text-title-md font-bold text-on-surface">Dự báo rủi ro &amp; Phương án dự phòng</h4>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-medium">Adaptive Engine</span>
+</div>
+<div class="space-y-2.5 text-body-sm text-on-surface-variant">
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2.5">
+<span class="material-symbols-outlined text-base text-secondary mt-0.5" data-icon="cloud_off">cloud_off</span>
+<div class="">
+<strong class="text-on-surface block">Rủi ro thiếu nắng mùa mưa:</strong>
+                  Nếu tuần 3 có trên 4 ngày liên tục mưa âm u, AI sẽ kích hoạt kịch bản giảm 40% lượng tưới và bật đèn LED bổ sung 3 tiếng mỗi tối.
+                </div>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2.5">
+<span class="material-symbols-outlined text-base text-error mt-0.5" data-icon="pest_control">pest_control</span>
+<div class="">
+<strong class="text-on-surface block">Cảnh báo bọ phấn trắng ban công:</strong>
+                  Khi gặp hiện tượng đốm bạc lá con, bấm nút <span class="text-error font-medium">Báo sự cố</span> ở góc trên để AI tự động điều chỉnh lịch phun neem oil và cách ly chậu nhiễm khuẩn.
+                </div>
+</div>
+</div>
+<div class="pt-2 flex items-center justify-between font-label-sm text-label-sm text-outline border-t border-surface-variant">
+<span class="">Cơ chế tự bù tiến độ: Sẵn sàng</span>
+<span class="text-primary font-semibold">Tự động Re-planning</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: FIXED BOTTOM PERSISTENT ACTION FOOTER -->
+<div class="sticky bottom-6 z-40 bg-surface/95 backdrop-blur-md border border-surface-variant rounded-xl p-4 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-full bg-primary-fixed text-primary flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-xl" data-icon="task">task</span>
+</span>
+<div>
+<div class="font-title-sm text-title-sm text-on-surface">Kế hoạch đã sẵn sàng để triển khai thực tế</div>
+<div class="font-body-sm text-body-sm text-outline">Bao gồm 45 ngày lộ trình, 6 hạng mục vật tư, và 18 điểm chạm kiểm tra chất lượng.</div>
+</div>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+<button class="px-4 py-2.5 rounded-lg border border-surface-variant bg-surface hover:bg-surface-container text-body-md font-medium text-on-surface transition-colors" type="button">
+          Lưu bản nháp
+        </button>
+<button class="px-4 py-2.5 rounded-lg border border-surface-variant bg-surface hover:bg-surface-container text-body-md font-medium text-on-surface flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-base" data-icon="tune">tune</span>
+          Chỉnh sửa tinh chỉnh
+        </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary hover:bg-[#234737] text-on-primary font-title-sm text-title-sm flex items-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="play_arrow" style='font-variation-settings: "FILL" 1;'>play_arrow</span>
+<span class="">Bắt đầu dự án ngay hôm nay</span>
+</button>
+</div>
+</div>
+</main>
+<!-- MICRO-INTERACTION SCRIPT FOR TEMPLATES -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const promptArea = document.getElementById('idea-prompt');
+      const samplePills = document.querySelectorAll('button[class*="rounded-full"]');
+
+      const templateMap = {
+        'Trồng dưa lưới ban công': 'Tôi muốn trồng 4 cây dưa lưới Huỳnh Long trên sân thượng tầng 4 rộng 5m², cần quy trình bấm ngọn thụ phấn chính xác và thu hoạch sau 65 ngày.',
+        'Chế tạo Robot dò đường Arduino': 'Tự làm một chiếc robot 2 bánh tự hành dò đường bằng Arduino Uno R3 và cảm biến hồng ngoại 5 kênh, ngân sách 600.000đ, hoàn thành sau 14 ngày.',
+        'Làm sa bàn Cyberpunk 1:35': 'Làm sa bàn ngõ hẻm Cyberpunk kích thước 30x30cm tỉ lệ 1:35 với đèn LED neon mini và hiệu ứng mưa ẩm, hoàn thiện trong 21 ngày.',
+        'Nuôi cá Guppy & thủy sinh': 'Setup một bể cá thủy sinh cubic 30x30x30 phong cách Iwagumi không CO2, thả 6 chú cá Guppy Full Gold, hoàn thành chu trình nitrogen sau 30 ngày.',
+        'Chạy marathon 21km sau 3 tháng': 'Lên giáo án tập chạy cự ly Bán Marathon 21km (Half Marathon) từ con số 0 trong 12 tuần, dành 4 buổi mỗi tuần, mỗi buổi 45 phút.'
+      };
+
+      samplePills.forEach(pill => {
+        pill.addEventListener('click', (e) => {
+          const text = pill.innerText.trim();
+          if (templateMap[text]) {
+            promptArea.value = templateMap[text];
+            promptArea.focus();
+          }
+        });
+      });
+    });
+  </script>
+</body></html>

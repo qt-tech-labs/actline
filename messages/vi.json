@@ -1,0 +1,267 @@
+{
+  "meta": {
+    "title": "Actline - Bảng điều khiển hôm nay",
+    "description": "Theo dõi cảm biến IoT và thực hiện nhiệm vụ canh tác mỗi ngày."
+  },
+  "common": {
+    "comingSoon": "Sắp ra mắt",
+    "close": "Đóng",
+    "cancel": "Hủy",
+    "submit": "Gửi",
+    "save": "Lưu",
+    "genericError": "Không thực hiện được. Hãy thử lại.",
+    "retry": "Thử lại",
+    "skipToContent": "Bỏ qua điều hướng"
+  },
+  "header": {
+    "brand": "Actline",
+    "nav": {
+      "label": "Điều hướng chính",
+      "today": "Hôm nay",
+      "timeline": "Dòng thời gian",
+      "inventory": "Kho vật tư",
+      "photoLog": "Nhật ký ảnh"
+    },
+    "notifications": "Thông báo",
+    "help": "Trợ giúp",
+    "settings": "Cài đặt & cấu hình",
+    "account": "Tài khoản"
+  },
+  "switcher": {
+    "label": "Đổi dự án",
+    "heading": "Dự án của bạn"
+  },
+  "progress": {
+    "summary": "Tiến độ: {day}/{total} ngày ({pct}%)",
+    "battery": "Mức pin trạm",
+    "synced": "Đồng bộ {time}",
+    "hubSettings": "Cài đặt kết nối IoT",
+    "offline": "Mất kết nối",
+    "connectIot": "Kết nối IoT",
+    "connectIotHint": "Dự án này chưa dùng IoT. Bật để theo dõi cảm biến, camera và van tưới."
+  },
+  "timeline": {
+    "label": "Các mốc canh tác",
+    "prev": "Xem các mốc trước",
+    "next": "Xem các mốc sau",
+    "today": "N{day} • Hôm nay",
+    "dayLabel": "N{day}"
+  },
+  "metrics": {
+    "label": "Chỉ số cảm biến",
+    "air_temperature": "Nhiệt độ khí",
+    "air_humidity": "Độ ẩm không khí",
+    "soil_moisture": "Độ ẩm đất rễ",
+    "substrate_ph": "pH giá thể",
+    "light_intensity": "Cường độ nắng",
+    "status": {
+      "ok": "Trong ngưỡng",
+      "low": "Thấp hơn ngưỡng",
+      "high": "Cao hơn ngưỡng"
+    },
+    "tooltip": "{name}: {status} (mục tiêu {min}-{max})",
+    "average": "TB: {value}",
+    "period": "N1 → N{day}",
+    "noData": "Chưa có dữ liệu cảm biến"
+  },
+  "projects": {
+    "title": "Dự án đang thực thi",
+    "count": "Đang hoạt động: {count} mục tiêu",
+    "add": "Tạo lộ trình mới",
+    "empty": "Chưa có dự án nào",
+    "emptyHint": "Tạo lộ trình đầu tiên để bắt đầu theo dõi."
+  },
+  "camera": {
+    "title": "Live Cam ban công",
+    "live": "TRỰC TIẾP",
+    "snapshot": "Snapshot AI",
+    "snapshotHint": "Chụp ảnh để AI phân tích hình thái hoa",
+    "timelapse": "Chế độ time-lapse",
+    "fullscreen": "Phóng to",
+    "noCamera": "Chưa kết nối camera"
+  },
+  "hardware": {
+    "title": "Phần cứng IoT",
+    "online": "{online}/{total} trực tuyến",
+    "status": {
+      "ok": "Bình thường",
+      "warning": "Cần chú ý",
+      "offline": "Mất kết nối"
+    },
+    "empty": "Chưa kết nối thiết bị nào"
+  },
+  "day": {
+    "progress": "{day}/{total} ngày",
+    "todayLabel": "Hôm nay",
+    "goldenWindow": "Khung giờ vàng thụ phấn tốt nhất",
+    "quickNote": "Ghi chép nhanh",
+    "aiHint": "AI gợi ý:",
+    "aiConfidence": "Độ chuẩn xác phân tích",
+    "noPlanTitle": "Chưa có kế hoạch cho ngày {day}",
+    "noPlanHint": "Thêm nhiệm vụ cho ngày này để xem danh sách bước tại đây."
+  },
+  "steps": {
+    "label": "Các bước hôm nay",
+    "stepOf": "BƯỚC {n}/{total}",
+    "doing": "Đang làm",
+    "done": "Đã hoàn tất",
+    "notStarted": "Chưa bắt đầu",
+    "completedAt": "Thời điểm hoàn thành",
+    "markDone": "Đánh dấu hoàn thành: {title}",
+    "markTodo": "Bỏ đánh dấu hoàn thành: {title}",
+    "clip": "Clip kỹ thuật ({seconds}s)",
+    "cameraCloseup": "Cận cảnh Live Cam",
+    "samplePhoto": "Ảnh mẫu AI",
+    "upload": "Tải ảnh từ máy",
+    "useAsProof": "Dùng làm minh chứng",
+    "minutes": "{count}m",
+    "completeTitle": "Hoàn thành nhiệm vụ ngày {day}/{total}",
+    "completeProgress": "Đã xong {done}/{total} bước • {title}",
+    "completeAction": "Đánh dấu hoàn thành ngày",
+    "dayCompleted": "Đã hoàn thành ngày {day}"
+  },
+  "supplies": {
+    "title": "Vật tư hôm nay",
+    "count": "{count} món",
+    "available": "Đã có sẵn",
+    "missing": "Cần mua",
+    "cost": "Chi phí:",
+    "empty": "Hôm nay không cần chuẩn bị vật tư"
+  },
+  "finance": {
+    "title": "Tiến độ tài chính",
+    "spent": "Đã chi giải ngân",
+    "revenue": "Doanh thu dự kiến",
+    "ratio": "{pct}% tổng chi / thu",
+    "budget": "Ngân sách: {amount}",
+    "profit": "Lợi nhuận ròng ước tính:",
+    "spentTooltip": "Đã giải ngân: {spent} ({revenuePct}% doanh thu, {budgetPct}% ngân sách)",
+    "reserveTooltip": "Dự phòng ngân sách còn lại: {amount}",
+    "currency": "{value} đ"
+  },
+  "rules": {
+    "title": "Luật tự động",
+    "enabledCount": "{count} bật",
+    "on": "Đang kích hoạt",
+    "off": "Đang tắt",
+    "toggle": "Bật hoặc tắt luật: {name}",
+    "empty": "Chưa có luật tự động nào"
+  },
+  "lookahead": {
+    "title": "2 ngày tới",
+    "tomorrow": "N{day} (Mai)",
+    "day": "N{day}",
+    "minutes": "{count}m",
+    "empty": "Chưa lên kế hoạch cho những ngày tới"
+  },
+  "dialogs": {
+    "noteTitle": "Ghi chép nhanh",
+    "noteLabel": "Nội dung ghi chép",
+    "notePlaceholder": "Ví dụ: hoa cái số 7 nở muộn hơn dự kiến",
+    "noteSaved": "Đã lưu ghi chép",
+    "incidentTitle": "Báo sự cố",
+    "incidentLabel": "Mô tả sự cố",
+    "incidentPlaceholder": "Ví dụ: van tưới không đóng, rò nước ở ống số 2",
+    "incidentSeverity": "Mức độ",
+    "severity": {
+      "low": "Nhẹ",
+      "medium": "Trung bình",
+      "high": "Khẩn cấp"
+    },
+    "incidentSent": "Đã gửi báo cáo sự cố"
+  },
+  "mobileNav": {
+    "label": "Điều hướng di động",
+    "today": "Hôm nay",
+    "camera": "Live Cam",
+    "sensors": "Cảm biến",
+    "supplies": "Vật tư",
+    "more": "Thêm"
+  },
+  "empty": {
+    "title": "Chưa có dự án nào",
+    "hint": "Tạo lộ trình đầu tiên để xem nhiệm vụ mỗi ngày và dữ liệu cảm biến tại đây."
+  },
+  "hubSettings": {
+    "title": "Cài đặt ESP32 Hub v2 & Thiết bị ngoại vi",
+    "subtitle": "Quản lý kết nối mạng ESP32 Gateway, sơ đồ chân GPIO/ADC ngoại vi & thông số an toàn",
+    "online": "Online",
+    "offline": "Offline",
+    "loading": "Đang tải cấu hình…",
+    "loadError": "Không tải được cấu hình hub.",
+    "comingSoon": "Sắp ra mắt",
+    "network": {
+      "title": "1. Kết nối mạng ESP32 Hub (Master Gateway Connectivity)",
+      "wifi": "Mạng WiFi Station (2.4GHz)",
+      "rescan": "Quét lại",
+      "signal": "{dbm} dBm ({quality})",
+      "good": "Tốt",
+      "fair": "Khá",
+      "poor": "Yếu",
+      "ip": "IP",
+      "mac": "MAC",
+      "broker": "Cloud MQTT Broker (TLS 1.3)",
+      "editBroker": "Cấu hình Broker",
+      "brokerHost": "Máy chủ",
+      "brokerPort": "Cổng",
+      "auth": {
+        "mtls": "mTLS Đã xác thực",
+        "tls": "TLS",
+        "none": "Không mã hóa"
+      },
+      "clientId": "Client ID",
+      "connected": "Đã kết nối",
+      "disconnected": "Mất kết nối",
+      "ble": "BLE 5.0: Sẵn sàng cấu hình nhanh",
+      "flash": "Flash: {flash}",
+      "uptime": "Uptime:",
+      "uptimeValue": "{days} ngày, {hours} giờ {minutes} phút"
+    },
+    "pins": {
+      "title": "2. Sơ đồ chân cắm ngoại vi trên ESP32 (Hardware Pinout & GPIO Mapping)",
+      "hint": "Tất cả cảm biến và van tưới kết nối vật lý trực tiếp vào chân GPIO / ADC / I2C của bo mạch ESP32-S3 (không phải thiết bị mạng độc lập).",
+      "count": "{count} cổng phần cứng",
+      "type": {
+        "i2c": "I2C Bus",
+        "analog": "Analog Input",
+        "digital_out": "Digital Output"
+      },
+      "configure": "Cấu hình",
+      "calibrateSoil": "Hiệu chuẩn đất",
+      "calibratePh": "Hiệu chuẩn pH",
+      "valveIdle": "Đang ngắt (Đóng)",
+      "testValve": "Test van 5s",
+      "valveQueued": "Đã gửi lệnh mở van 5 giây",
+      "noReading": "—"
+    },
+    "camera": {
+      "title": "Camera AI Ban công (Luồng hình ảnh RTSP độc lập qua WiFi/IP)",
+      "type": "IP Stream",
+      "test": "Test stream",
+      "editUrl": "Đổi URL",
+      "url": "Địa chỉ RTSP",
+      "invalidUrl": "Địa chỉ phải bắt đầu bằng rtsp:// hoặc rtsps://"
+    },
+    "firmware": {
+      "title": "3. Cài đặt đồng bộ Firmware & An toàn tự động hóa",
+      "telemetry": "Tần suất ESP32 đẩy telemetry",
+      "telemetryHint": "Gửi gói tin JSON cảm biến qua MQTT",
+      "interval": "{sec}s / lần",
+      "sleep": "Tiết kiệm pin thông minh",
+      "sleepHint": "ESP32 Light-sleep khi pin dưới 20%",
+      "watchdog": "Tự động ngắt khẩn cấp van tưới (Hardware Watchdog)",
+      "watchdogBadge": "An toàn",
+      "watchdogHint": "Tự động ngắt van {pin} ngay trên ESP32 nếu mất kết nối WiFi/MQTT hoặc thời gian mở van liên tục vượt quá 5 phút để chống úng rễ."
+    },
+    "actions": {
+      "ping": "Ping ESP32 Hub ({ip})",
+      "pinging": "Đang ping…",
+      "pingOk": "Hub phản hồi, heartbeat cách đây {sec} giây",
+      "pingFail": "Hub không phản hồi",
+      "reset": "Khôi phục mặc định",
+      "cancel": "Hủy bỏ",
+      "save": "Lưu cấu hình & Áp dụng",
+      "saving": "Đang lưu…"
+    }
+  }
+}

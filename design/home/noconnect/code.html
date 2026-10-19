@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi" style=""><head></head><body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col font-body-md text-body-md selection:bg-primary-fixed selection:text-primary"><svg aria-hidden="true" class="inline-defs-container" style="position:absolute;width:0;height:0;overflow:hidden"></svg>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Actline - IoT Smart Dashboard &amp; Today Execution Hub</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "error-container": "#ffdad6",
+            "secondary-container": "#fc934f",
+            "surface-tint": "#3a6752",
+            "surface-dim": "#dbdad7",
+            "surface-container-lowest": "#ffffff",
+            "surface": "#faf9f6",
+            "on-error": "#ffffff",
+            "secondary": "#994703",
+            "secondary-fixed-dim": "#ffb68c",
+            "on-error-container": "#93000a",
+            "primary-fixed-dim": "#a1d1b8",
+            "primary": "#134230",
+            "inverse-on-surface": "#f2f1ee",
+            "outline-variant": "#c0c9c2",
+            "background": "#faf9f6",
+            "on-secondary-fixed": "#321200",
+            "outline": "#717973",
+            "on-tertiary-fixed-variant": "#3a485b",
+            "surface-variant": "#e3e2e0",
+            "tertiary-fixed": "#d5e3fc",
+            "on-surface-variant": "#414944",
+            "on-primary-fixed": "#002114",
+            "surface-container-highest": "#e3e2e0",
+            "on-primary-fixed-variant": "#224f3c",
+            "on-tertiary": "#ffffff",
+            "on-primary": "#ffffff",
+            "primary-container": "#2d5a46",
+            "on-tertiary-container": "#b7c5dd",
+            "tertiary-container": "#445266",
+            "surface-container": "#efeeeb",
+            "on-secondary-fixed-variant": "#753400",
+            "primary-fixed": "#bceed3",
+            "on-background": "#1a1c1a",
+            "surface-container-low": "#f4f3f0",
+            "on-tertiary-fixed": "#0d1c2e",
+            "on-secondary-container": "#6d3000",
+            "inverse-primary": "#a1d1b8",
+            "surface-bright": "#faf9f6",
+            "error": "#ba1a1a",
+            "on-primary-container": "#9fcfb6",
+            "tertiary-fixed-dim": "#b9c7df",
+            "on-secondary": "#ffffff",
+            "inverse-surface": "#2f312f",
+            "tertiary": "#2d3b4e",
+            "secondary-fixed": "#ffdbc9",
+            "on-surface": "#1a1c1a",
+            "surface-container-high": "#e9e8e5"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "0.875rem",
+            "margin-md": "1.75rem",
+            "space-2xl": "3rem",
+            "space-xl": "2rem",
+            "margin-lg": "2.5rem",
+            "gutter": "1.25rem",
+            "space-lg": "1.25rem",
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-xs": "0.25rem",
+            "gutter-lg": "1.75rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Space Grotesk", "sans-serif"],
+            "headline-xl-mobile": ["Space Grotesk", "sans-serif"],
+            "headline-xl": ["Space Grotesk", "sans-serif"],
+            "caption": ["Manrope", "sans-serif"],
+            "body-md": ["Manrope", "sans-serif"],
+            "label-sm": ["JetBrains Mono", "monospace"],
+            "label-md": ["JetBrains Mono", "monospace"],
+            "title-sm": ["Manrope", "sans-serif"],
+            "headline-md": ["Space Grotesk", "sans-serif"],
+            "body-sm": ["Manrope", "sans-serif"],
+            "body-lg": ["Manrope", "sans-serif"],
+            "title-md": ["Manrope", "sans-serif"],
+            "headline-lg-mobile": ["Space Grotesk", "sans-serif"]
+          },
+          "fontSize": {
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-xl-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "600" }],
+            "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "title-sm": ["15px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-sm": ["13px", { "lineHeight": "19px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+            "title-md": ["17px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #faf9f6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c0c9c2;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #717973;
+    }
+  </style>
+<!-- ================= TOP APP BAR ================= -->
+<header class="bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 z-50 shadow-sm dark:shadow-none w-full px-space-xl h-16 flex items-center justify-between sticky">
+<!-- Brand Anchor & Compact Project Switcher -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-lg bg-primary-container text-surface-container-lowest flex items-center justify-center font-headline-md font-bold shadow-sm">
+        A
+      </span>
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-primary dark:text-inverse-primary">
+        Actline
+      </span>
+<span class="w-2 h-2 rounded-full bg-[#1b8a5a] shadow-[0_0_6px_rgba(27,138,90,0.5)]"></span>
+</div>
+<button class="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container px-3 py-1.5 rounded-lg border border-outline-variant/30 text-on-surface transition-colors cursor-pointer group" title="Đổi dự án">
+<span class="material-symbols-outlined text-[17px] text-primary">psychiatry</span>
+<span class="font-title-sm text-[13px] font-semibold text-primary truncate max-w-[180px]">Vườn dưa leo Nhật</span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">expand_more</span>
+</button>
+</div>
+<!-- Navigation Tabs -->
+<nav class="hidden md:flex items-center gap-1 h-full">
+<a class="text-primary font-title-sm text-[13px] border-b-2 border-primary h-full px-3 flex items-center gap-1.5 font-semibold" href="#">
+<span class="material-symbols-outlined text-[17px] fill">calendar_today</span>
+<span class="">Hôm nay</span>
+</a>
+<a class="text-on-surface-variant font-body-md text-[13px] hover:text-on-surface h-full px-3 flex items-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">timeline</span>
+<span class="">Dòng thời gian</span>
+</a>
+<a class="text-on-surface-variant font-body-md text-[13px] hover:text-on-surface h-full px-3 flex items-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">inventory_2</span>
+<span class="">Kho vật tư</span>
+</a>
+<a class="text-on-surface-variant font-body-md text-[13px] hover:text-on-surface h-full px-3 flex items-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">photo_library</span>
+<span class="">Nhật ký ảnh</span>
+</a>
+</nav>
+<!-- Utility Controls & Avatar -->
+<div class="flex items-center gap-1.5">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors relative" title="Thông báo">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors hidden sm:block" title="Trợ giúp">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors" title="Cài đặt &amp; Cấu hình">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/40 ml-2 cursor-pointer" title="Tài khoản">
+<img class="w-full h-full object-cover" data-alt="Chân dung kỹ sư nông nghiệp Actline" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzvkz2YHiYXjUiRpM3OgzQlOnFxpjJOqUiMyLTRvWKaetgU4JN87S7o1lPeaCCnPXEX0DjQbpJy2-9D-HfurturX3OpbJIpsE7T7CZUPLmUlD5KchTHZXCm25HaJ7dLfglJ8thqALhn6pyLq6ALJZTdyp3XQbyNKP9CLFIBU0v1fTLuM3ArQLS_0qFbnxmZyFXHG4OpqVBLe5yWI_Y67gldOQaCtagcq9vlM2KeUuipMqY4iogyg"/>
+</div>
+</div>
+</header>
+<!-- ================= SUB-HEADER: MILESTONE TIMELINE & LIVE HARDWARE TELEMETRY ================= -->
+<section class="bg-surface-container-lowest border-b border-surface-variant px-space-xl py-space-sm sticky top-16 z-30 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+<div class="max-w-[1720px] mx-auto flex flex-col gap-2">
+<!-- Timeline Top Bar: Overall Progress summary & IoT Status Badge -->
+<div class="flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-2 shrink-0">
+<span class="font-label-sm text-label-sm bg-primary-fixed text-on-primary-fixed px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[15px]">pace</span>
+          Tiến độ: 16/45 ngày (35%)
+        </span>
+<span class="hidden sm:inline-flex font-caption text-caption text-on-surface-variant items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-primary">calendar_month</span>
+          Giai đoạn 2: Ra hoa &amp; Thụ phấn tập trung
+        </span>
+</div>
+<!-- Live IoT Telemetry status badge -->
+<div class="flex items-center gap-space-sm bg-error-container/40 px-2.5 py-1 rounded-lg border border-error/40 shrink-0"><div class="flex items-center gap-1.5 pr-2 border-r border-error/40"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-error"></span></span><span class="font-label-md text-label-md font-semibold text-error">Hub v2</span><span class="font-label-sm text-[11px] bg-error text-white px-1 rounded font-bold uppercase">Offline</span></div><div class="flex items-center gap-2 text-on-surface font-label-sm text-label-sm"><span class="flex items-center gap-0.5 text-error font-medium" title="Mất tín hiệu"><span class="material-symbols-outlined text-[14px]">wifi_off</span> Mất tín hiệu 42p trước</span><span class="hidden md:inline-flex items-center gap-1 bg-surface-container-lowest px-1.5 py-0.2 rounded border border-surface-variant text-[10px] text-outline">Ban công T4</span></div><button class="flex items-center gap-1 bg-error hover:bg-[#93000a] text-white text-[11px] font-label-sm font-semibold px-2 py-0.5 rounded transition-all cursor-pointer shadow-sm active:scale-95 ml-1" title="Mở cấu hình kết nối IoT"><span class="material-symbols-outlined text-[13px]">settings_backup_restore</span> Kết nối lại</button></div>
+</div>
+<!-- Clean, Horizontal Node-based Timeline (N01 -> N45 with N16 centered) -->
+<div class="relative flex items-center w-full bg-surface-container-low/70 rounded-xl p-2 px-3 border border-surface-variant/80 overflow-hidden">
+<!-- Left Navigation Arrow -->
+<button class="w-7 h-7 rounded-lg bg-surface-container-lowest hover:bg-surface-container border border-surface-variant flex items-center justify-center text-outline hover:text-primary transition-colors shrink-0 z-20 shadow-sm mr-2 cursor-pointer" title="Xem các mốc trước">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<!-- Scrollable Continuous Timeline Track -->
+<div class="flex-1 overflow-x-auto scrollbar-none py-2 relative">
+<div class="relative flex items-center justify-between min-w-[1120px] px-4">
+<!-- Continuous Connection Track -->
+<div class="absolute left-6 right-6 h-1 top-4 -translate-y-1/2 flex pointer-events-none z-0">
+<!-- Solid Green Track for Completed Days (Left half up to N16) -->
+<div class="bg-primary h-full rounded-l-full" style="width: 50%;"></div>
+<!-- Muted Dashed/Dotted Line for Upcoming Days (Right half) -->
+<div class="h-full flex-1 border-t-2 border-dashed border-outline-variant/70 mt-[1px]"></div>
+</div>
+<!-- N01: Gieo hạt (Completed) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N01: Gieo hạt &amp; Ủ ẩm">
+<div class="w-6 h-6 rounded-full bg-primary text-surface-container-lowest flex items-center justify-center shadow-sm text-[12px] group-hover:ring-2 ring-primary-fixed transition-all">
+<span class="material-symbols-outlined text-[13px] fill">check</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-primary font-bold mt-1">N01</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Gieo hạt</span>
+</div>
+<!-- Subtle micro-ticks: N02, N03 -->
+<div class="relative z-10 flex flex-col items-center opacity-60" title="N02 - N03: Nứt nanh">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<!-- N04: Nảy mầm (Completed) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N04: Nảy mầm &amp; Ra lá mầm">
+<div class="w-6 h-6 rounded-full bg-primary text-surface-container-lowest flex items-center justify-center shadow-sm text-[12px] group-hover:ring-2 ring-primary-fixed transition-all">
+<span class="material-symbols-outlined text-[13px] fill">check</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-primary font-bold mt-1">N04</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Nảy mầm</span>
+</div>
+<!-- Subtle micro-ticks: N05, N06, N07 -->
+<div class="relative z-10 flex flex-col items-center opacity-60" title="N06: Ra lá thật">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<!-- N08: Lên giàn (Completed) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N08: Cho leo giàn lưới">
+<div class="w-6 h-6 rounded-full bg-primary text-surface-container-lowest flex items-center justify-center shadow-sm text-[12px] group-hover:ring-2 ring-primary-fixed transition-all">
+<span class="material-symbols-outlined text-[13px] fill">check</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-primary font-bold mt-1">N08</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Lên giàn</span>
+</div>
+<!-- Subtle micro-ticks: N09, N10, N11 -->
+<div class="relative z-10 flex flex-col items-center opacity-60" title="N10: Bón thúc đợt 1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<!-- N12: Bón lót (Completed) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N12: Bón hữu cơ Bokashi">
+<div class="w-6 h-6 rounded-full bg-primary text-surface-container-lowest flex items-center justify-center shadow-sm text-[12px] group-hover:ring-2 ring-primary-fixed transition-all">
+<span class="material-symbols-outlined text-[13px] fill">check</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-primary font-bold mt-1">N12</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Bón lót</span>
+</div>
+<!-- N14: Tỉa nhánh (Completed) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N14: Cắt tỉa nhánh phụ">
+<div class="w-6 h-6 rounded-full bg-primary text-surface-container-lowest flex items-center justify-center shadow-sm text-[12px] group-hover:ring-2 ring-primary-fixed transition-all">
+<span class="material-symbols-outlined text-[13px] fill">check</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-primary font-bold mt-1">N14</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Tỉa nhánh</span>
+</div>
+<!-- N15: Kiểm tra ẩm (Completed) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N15: Kiểm tra ẩm &amp; Chuẩn bị thụ phấn">
+<div class="w-6 h-6 rounded-full bg-primary text-surface-container-lowest flex items-center justify-center shadow-sm text-[12px] group-hover:ring-2 ring-primary-fixed transition-all">
+<span class="material-symbols-outlined text-[13px] fill">check</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-primary font-bold mt-1">N15</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Kiểm tra ẩm</span>
+</div>
+<!-- ================= 1. CENTERED TODAY ACTIVE NODE: N16 ================= -->
+<div class="relative z-20 flex flex-col items-center mx-2 group cursor-pointer" title="Hôm nay (N16): Thụ phấn hoa cái đợt 1 &amp; tỉa chồi nách 1-5">
+<div class="px-3.5 py-1.5 rounded-full bg-[#2d5a46] text-surface-container-lowest flex items-center gap-1.5 shadow-[0_0_16px_rgba(45,90,70,0.4)] ring-4 ring-primary-fixed border border-primary-fixed scale-105 transition-transform hover:scale-110">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#a1d1b8] opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-[#ffffff]"></span>
+</span>
+<span class="font-label-sm text-[11px] font-bold tracking-tight whitespace-nowrap text-white">N16 • Hôm nay</span>
+</div>
+<span class="font-label-sm text-[10px] font-bold text-primary mt-1.5 flex items-center gap-0.5 whitespace-nowrap">
+              Thụ phấn đợt 1
+            </span>
+</div>
+<!-- ================= UPCOMING NODES ================= -->
+<!-- N17: Mua Kali (Upcoming / Shopping) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N17 (Ngày mai): Mua phân Kali hữu cơ &amp; chuẩn bị tưới">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest border-2 border-secondary text-secondary flex items-center justify-center shadow-sm group-hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[13px]">shopping_basket</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-secondary font-bold mt-1">N17</span>
+<span class="font-caption text-[10px] text-secondary font-semibold truncate max-w-[55px] text-center">Mua Kali</span>
+</div>
+<!-- N18: Thụ phấn đợt 2 (Upcoming) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N18: Thụ phấn đợt 2 &amp; Bọc lưới chùm hoa">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant flex items-center justify-center shadow-sm group-hover:border-primary transition-all">
+<span class="font-mono text-[10px] font-medium">18</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-on-surface-variant mt-1">N18</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Đợt 2</span>
+</div>
+<!-- Subtle micro-ticks: N19 - N21 -->
+<div class="relative z-10 flex flex-col items-center opacity-40" title="N20: Kiểm tra phát triển rễ">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+</div>
+<!-- N22: Bọc trái (Upcoming) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N22: Bọc túi bảo vệ trái non">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant flex items-center justify-center shadow-sm group-hover:border-primary transition-all">
+<span class="material-symbols-outlined text-[13px] text-outline group-hover:text-primary">shield</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-on-surface-variant mt-1">N22</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Bọc trái</span>
+</div>
+<!-- Subtle micro-ticks: N23 - N27 -->
+<div class="relative z-10 flex flex-col items-center opacity-40" title="N25: Bón thúc kali nuôi quả">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+</div>
+<!-- N28: Tỉa ngọn (Upcoming) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N28: Bấm ngọn thân chính ở lá 22">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant flex items-center justify-center shadow-sm group-hover:border-primary transition-all">
+<span class="font-mono text-[10px] font-medium">28</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-on-surface-variant mt-1">N28</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Tỉa ngọn</span>
+</div>
+<!-- Subtle micro-ticks: N29 - N34 -->
+<div class="relative z-10 flex flex-col items-center opacity-40" title="N32: Phòng ngừa bọ phấn trắng">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+</div>
+<!-- N35: Soi sâu rầy (Upcoming) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N35: Soi camera AI phát hiện phấn trắng và sâu rầy">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant flex items-center justify-center shadow-sm group-hover:border-primary transition-all">
+<span class="material-symbols-outlined text-[13px] text-outline group-hover:text-primary">pest_control</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-on-surface-variant mt-1">N35</span>
+<span class="font-caption text-[10px] text-outline truncate max-w-[55px] text-center">Soi sâu</span>
+</div>
+<!-- Subtle micro-ticks: N36 - N44 -->
+<div class="relative z-10 flex flex-col items-center opacity-40" title="N40: Kiểm tra kích thước dưa">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+</div>
+<!-- N45: Thu hoạch (Target Flag) -->
+<div class="relative z-10 flex flex-col items-center group cursor-pointer" title="N45: Thu hoạch dưa leo đợt 1 (Đích đến chu kỳ 45 ngày)">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center shadow-sm ring-1 ring-secondary/40 font-bold group-hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[13px]">flag</span>
+</div>
+<span class="font-label-sm text-[10px] font-mono text-secondary font-bold mt-1">N45</span>
+<span class="font-caption text-[10px] text-secondary font-semibold truncate max-w-[55px] text-center">Thu hoạch</span>
+</div>
+</div>
+</div>
+<!-- Right Navigation Arrow -->
+<button class="w-7 h-7 rounded-lg bg-surface-container-lowest hover:bg-surface-container border border-surface-variant flex items-center justify-center text-outline hover:text-primary transition-colors shrink-0 z-20 shadow-sm ml-2 cursor-pointer" title="Xem các mốc sau">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- ================= TOP IOT METRIC TELEMETRY CARDS ================= -->
+<section class="max-w-[1720px] mx-auto w-full px-space-xl pt-space-lg pb-space-sm"><div class="mb-space-sm p-3 rounded-xl bg-error-container/30 border border-error/40 flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-lg bg-error text-white flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">sensors_off</span></div><div><p class="font-title-sm text-title-sm font-bold text-error flex items-center gap-1">⚠️ Cảnh báo: Hub v2 đang ngắt kết nối (Mất tín hiệu 42 phút)</p><p class="font-body-sm text-body-sm text-on-surface-variant">Dữ liệu cảm biến thời gian thực tạm dừng đồng bộ. Hiển thị thông số lưu trữ gần nhất lúc 07:42 sáng nay.</p></div></div><div class="flex items-center gap-2"><button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container border border-surface-variant font-label-sm text-label-sm font-semibold text-on-surface transition-all cursor-pointer shadow-sm"><span class="material-symbols-outlined text-[15px] text-outline">refresh</span> Kiểm tra Gateway</button><button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-error hover:bg-[#93000a] font-label-sm text-label-sm font-semibold text-white transition-all cursor-pointer shadow-sm active:scale-95"><span class="material-symbols-outlined text-[15px]">settings</span> Cấu hình kết nối IoT</button></div></div><div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-space-sm"><div class="bg-surface-container-lowest rounded-xl p-3 border border-outline-variant/60 shadow-sm opacity-80"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline">thermostat</span> Nhiệt độ khí</span><span class="font-label-sm text-[10px] bg-surface-container px-1 rounded text-outline font-mono">Offline</span></div><div class="my-1.5 flex items-baseline justify-between"><span class="font-headline-md text-headline-md font-bold text-outline font-mono">--.-°C</span><span class="font-label-sm text-[11px] text-outline">Trước: 28.4°C</span></div><div class="flex items-center justify-between text-[10px] font-label-sm text-error mt-1"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-error"></span>Mất tín hiệu</span><span class="font-mono text-outline">Lưu 07:42</span></div></div><div class="bg-surface-container-lowest rounded-xl p-3 border border-outline-variant/60 shadow-sm opacity-80"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline">humidity_mid</span> Độ ẩm khí</span><span class="font-label-sm text-[10px] bg-surface-container px-1 rounded text-outline font-mono">Offline</span></div><div class="my-1.5 flex items-baseline justify-between"><span class="font-headline-md text-headline-md font-bold text-outline font-mono">--%</span><span class="font-label-sm text-[11px] text-outline">Trước: 68%</span></div><div class="flex items-center justify-between text-[10px] font-label-sm text-error mt-1"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-error"></span>Mất tín hiệu</span><span class="font-mono text-outline">Lưu 07:42</span></div></div><div class="bg-surface-container-lowest rounded-xl p-3 border border-error/40 shadow-sm opacity-80"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline">water_drop</span> Độ ẩm đất rễ</span><span class="font-label-sm text-[10px] bg-error-container text-error px-1 rounded font-mono font-bold">Cảnh báo</span></div><div class="my-1.5 flex items-baseline justify-between"><span class="font-headline-md text-headline-md font-bold text-outline font-mono">--%</span><span class="font-label-sm text-[11px] text-secondary font-medium">Cần kiểm tra</span></div><div class="flex items-center justify-between text-[10px] font-label-sm text-error mt-1"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-error"></span>Không phản hồi</span><span class="font-mono text-outline">Lưu 07:42</span></div></div><div class="bg-surface-container-lowest rounded-xl p-3 border border-outline-variant/60 shadow-sm opacity-80"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline">science</span> pH giá thể</span><span class="font-label-sm text-[10px] bg-surface-container px-1 rounded text-outline font-mono">Offline</span></div><div class="my-1.5 flex items-baseline justify-between"><span class="font-headline-md text-headline-md font-bold text-outline font-mono">--.- <span class="font-label-sm text-[11px] font-normal text-outline">pH</span></span><span class="font-label-sm text-[11px] text-outline">Trước: 6.3</span></div><div class="flex items-center justify-between text-[10px] font-label-sm text-error mt-1"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-error"></span>Mất tín hiệu</span><span class="font-mono text-outline">Lưu 07:42</span></div></div><div class="bg-surface-container-lowest rounded-xl p-3 border border-outline-variant/60 shadow-sm col-span-2 md:col-span-1 opacity-80"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-outline">wb_sunny</span> Cường độ nắng</span><span class="font-label-sm text-[10px] bg-surface-container px-1 rounded text-outline font-mono">Offline</span></div><div class="my-1.5 flex items-baseline justify-between"><span class="font-headline-md text-headline-md font-bold text-outline font-mono">--k <span class="font-label-sm text-[11px] font-normal text-outline">Lux</span></span><span class="font-label-sm text-[11px] text-outline">Đang ngắt</span></div><div class="flex items-center justify-between text-[10px] font-label-sm text-error mt-1"><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-error"></span>Mất tín hiệu</span><span class="font-mono text-outline">Lưu 07:42</span></div></div></div></section>
+<!-- ================= MAIN THREE-COLUMN WORKSPACE ================= -->
+<main class="max-w-[1720px] mx-auto w-full px-space-xl py-space-md grid grid-cols-1 lg:grid-cols-12 gap-space-lg flex-1 items-start">
+<!-- ================= LEFT COLUMN: SIDE NAV, LIVE CAM & HARDWARE (Col 1-3) ================= -->
+<aside class="lg:col-span-3 flex flex-col gap-space-lg">
+<!-- Projects List -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-[0_1px_3px_rgba(30,38,33,0.04)]">
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-variant mb-space-sm">
+<div>
+<h2 class="font-title-sm text-title-sm font-semibold text-on-surface">Dự án đang thực thi</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Đang hoạt động: 4 mục tiêu</p>
+</div>
+<button class="w-7 h-7 rounded-lg bg-surface-container text-primary flex items-center justify-center hover:bg-surface-container-high transition-colors" title="Tạo lộ trình mới">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+</button>
+</div>
+<nav class="space-y-1">
+<!-- Active Project Item -->
+<a class="bg-surface-container-highest text-primary font-title-sm text-title-sm rounded-lg px-space-md py-space-sm flex items-center justify-between border-l-4 border-primary" href="#">
+<div class="flex items-center gap-space-sm truncate">
+<span class="material-symbols-outlined text-[20px] text-primary">psychiatry</span>
+<span class="truncate">Vườn dưa leo ban công Nhật</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary-container shrink-0"></span>
+</a>
+<!-- Project 2 -->
+<a class="text-on-surface-variant font-body-md text-body-md rounded-lg px-space-md py-space-sm flex items-center justify-between hover:bg-surface-container transition-colors" href="#">
+<div class="flex items-center gap-space-sm truncate">
+<span class="material-symbols-outlined text-[20px] text-outline">precision_manufacturing</span>
+<span class="truncate">Robot dò đường Arduino v2</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">N28</span>
+</a>
+<!-- Project 3 -->
+<a class="text-on-surface-variant font-body-md text-body-md rounded-lg px-space-md py-space-sm flex items-center justify-between hover:bg-surface-container transition-colors" href="#">
+<div class="flex items-center gap-space-sm truncate">
+<span class="material-symbols-outlined text-[20px] text-outline">architecture</span>
+<span class="truncate">Mô hình sa bàn Cyberpunk 1:35</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">N05</span>
+</a>
+<!-- Project 4 -->
+<a class="text-on-surface-variant font-body-md text-body-md rounded-lg px-space-md py-space-sm flex items-center justify-between hover:bg-surface-container transition-colors" href="#">
+<div class="flex items-center gap-space-sm truncate">
+<span class="material-symbols-outlined text-[20px] text-outline">recycling</span>
+<span class="truncate">Ủ phân hữu cơ Bokashi</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">N12</span>
+</a>
+</nav>
+</div>
+<!-- LIVE CAMERA FEED WIDGET -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-error/40 shadow-[0_1px_3px_rgba(30,38,33,0.04)]"><div class="p-space-sm border-b border-surface-variant flex items-center justify-between bg-error-container/20"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error animate-ping"></span><span class="font-title-sm text-title-sm text-error font-semibold flex items-center gap-1">Live Cam Ban Công</span></div><span class="font-label-sm text-[10px] bg-error text-white px-2 py-0.5 rounded font-mono font-bold">MẤT LUỒNG RTSP</span></div><div class="relative group bg-inverse-surface aspect-video w-full overflow-hidden flex items-center justify-center"><img class="w-full h-full object-cover opacity-20 filter grayscale" data-alt="Camera góc rộng quan sát vườn dưa leo trên ban công" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmaH5bu4ORRgH40NUSyv8WLwFyhwLDpYdbFKMo6IWYZ4HCo0Q8qMyPzmuAdlCnfzFF2rKOA3ZVjlyHHPINPRXL5DJ0s5Caj8wFil_MeX_ES0ljSBTpZowuT2TdmDVt6gsSwx7xJnjs9UxjlnstjQ01yAMKqaQm3LuHH-YdxD8jwSQKqRNz1h7OxRoDrxEen3r7NQsjJRbAkvq1CCkRQ8jvcWsbjQkP7_70oYtvg6uthfVsXwpU-g"/><div class="absolute inset-0 bg-black/60 backdrop-blur-sm p-4 flex flex-col items-center justify-center text-center gap-2"><span class="material-symbols-outlined text-[32px] text-error animate-pulse">videocam_off</span><p class="font-title-sm text-[13px] font-semibold text-white">Mất kết nối Camera Cam-01</p><p class="font-caption text-[11px] text-surface-variant max-w-[220px]">Đang thử tái kết nối qua giao thức RTSP (Thử lần 3/5)...</p><button class="mt-1 flex items-center gap-1 bg-surface-container-lowest/90 hover:bg-surface-container-lowest text-on-surface px-3 py-1 rounded-lg font-label-sm text-[11px] font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"><span class="material-symbols-outlined text-[14px] text-primary">sync</span> Thử kết nối lại</button></div></div><div class="p-space-sm bg-surface-container-low text-on-surface-variant font-caption text-caption flex items-start gap-2 border-t border-surface-variant"><span class="material-symbols-outlined text-[16px] text-error shrink-0 mt-0.5">warning</span><span class="">Snapshot AI gần nhất (07:42): <strong>3 hoa cái</strong> tại mắt lá 7, 8, 9. Hãy kiểm tra trực tiếp tại vườn.</span></div></div>
+<!-- Connected Hardware Sensors & Solenoid Status -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-error/40 shadow-[0_1px_3px_rgba(30,38,33,0.04)]"><div class="flex items-center justify-between mb-space-sm"><h3 class="font-title-sm text-title-sm font-semibold text-error flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-error">hub</span> Phần cứng IoT</h3><span class="font-label-sm text-[10px] bg-error text-white px-2 py-0.5 rounded font-mono font-bold">0/4 Ngoại tuyến</span></div><div class="space-y-1.5 text-on-surface font-body-sm text-body-sm"><div class="flex items-center justify-between p-1.5 px-2 rounded-lg bg-error-container/30 border border-error/30" title="ESP32 Master Gateway - Mất kết nối"><div class="flex items-center gap-2 truncate"><span class="material-symbols-outlined text-[16px] text-error">router</span><span class="truncate font-medium text-error">ESP32 Gateway</span></div><span class="font-label-sm text-[10px] bg-error text-white px-1.5 py-0.2 rounded font-mono font-bold">Mất kết nối</span></div><div class="flex items-center justify-between p-1.5 px-2 rounded-lg bg-surface-container-low" title="Đầu dò ẩm #1 &amp; #2 - Không phản hồi"><div class="flex items-center gap-2 truncate"><span class="material-symbols-outlined text-[16px] text-outline">sensors</span><span class="truncate text-on-surface-variant">Đầu dò ẩm #1 &amp; #2</span></div><span class="font-label-sm text-[10px] text-error font-medium">Không phản hồi</span></div><div class="flex items-center justify-between p-1.5 px-2 rounded-lg bg-surface-container-low" title="Van Solenoid tưới - Không phản hồi"><div class="flex items-center gap-2 truncate"><span class="material-symbols-outlined text-[16px] text-outline">valve</span><span class="truncate text-on-surface-variant">Van Solenoid tưới</span></div><span class="font-label-sm text-[10px] text-error font-medium">Chế độ thủ công</span></div></div><div class="mt-space-sm pt-space-xs border-t border-surface-variant"><button class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-sm text-[12px] font-semibold transition-all border border-outline-variant/40 cursor-pointer shadow-sm active:scale-95"><span class="material-symbols-outlined text-[16px] text-primary">settings</span> Cấu hình kết nối IoT</button></div></div>
+</aside>
+<!-- ================= CENTER COLUMN: TODAY'S EXECUTION ENGINE (Col 4-9) ================= -->
+<section class="lg:col-span-6 flex flex-col gap-space-md">
+<!-- Day Hero Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-xl border border-[#E5E0D8] shadow-[0_1px_3px_rgba(30,38,33,0.04)] relative">
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md bg-primary-fixed text-on-primary-fixed px-2.5 py-0.5 rounded font-bold" title="Tiến độ canh tác">
+            16/45 ngày
+          </span>
+<span class="font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded text-on-surface font-mono font-medium" title="Hôm nay">
+            24/10
+          </span>
+<div class="flex items-center gap-1 font-label-sm text-label-sm bg-secondary-fixed/40 text-on-secondary-fixed px-2.5 py-0.5 rounded" title="Khung giờ vàng thụ phấn tốt nhất">
+<span class="material-symbols-outlined text-[15px]">alarm</span>
+<span class="font-mono font-semibold">07:00 - 09:30</span>
+</div>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-outline-variant/60 bg-surface-container-low text-on-surface hover:bg-surface-container font-title-sm text-[12px] font-semibold transition-all cursor-pointer shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-[16px] text-primary">edit_note</span>
+<span class="">Ghi chép nhanh</span>
+</button>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight mb-space-xs">
+        Thụ phấn hoa cái đợt 1 &amp; Tỉa chồi nách mắt lá 1-5
+      </h1>
+<p class="text-on-surface-variant font-body-md text-body-md">
+        Tranh thủ phấn bung khỏe sáng sớm, đồng thời tỉa nhánh phụ để dồn dinh dưỡng nuôi quả non.
+      </p>
+<div class="mt-space-md p-space-sm rounded-lg bg-error-container/20 border-l-4 border-error flex items-center justify-between gap-space-sm"><div class="flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-[18px] text-error shrink-0">warning</span><p class="font-body-sm text-body-sm text-on-surface-variant truncate"><strong class="text-error">Cảnh báo IoT:</strong> Đang mất kết nối cảm biến. Hệ thống duy trì chế độ an toàn cục bộ và chờ đồng bộ lại.</p></div><span class="font-label-sm text-[10px] bg-error text-white px-2 py-0.5 rounded font-mono font-bold shrink-0">SAFE MODE</span></div>
+</div>
+<!-- Actionable Step Checklist -->
+<div class="space-y-space-md">
+<!-- Step 1 (Completed) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-sm flex items-start gap-space-sm opacity-80">
+<div class="pt-0.5">
+<span class="w-5 h-5 rounded bg-primary-container text-surface-container-lowest flex items-center justify-center shadow-sm" title="Đã hoàn tất">
+<span class="material-symbols-outlined text-[15px]">check</span>
+</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-label-sm text-[11px] font-mono text-outline">BƯỚC 1/4</span>
+<span class="font-label-sm text-[11px] bg-surface-container px-2 py-0.2 rounded text-outline font-mono flex items-center gap-1" title="Thời điểm hoàn thành">
+<span class="material-symbols-outlined text-[12px]">done_all</span> 07:15
+            </span>
+</div>
+<h3 class="font-title-sm text-title-sm font-semibold text-outline line-through">
+            Khảo sát &amp; đánh dấu hoa cái nở sáng nay
+          </h3>
+<p class="font-body-sm text-body-sm text-outline mt-0.5 truncate">
+            Đã phát hiện và đánh dấu 3 hoa cái trên giàn số 1.
+          </p>
+</div>
+</div>
+<!-- Step 2 (Active In Progress) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border-2 border-primary shadow-sm flex items-start gap-space-sm relative">
+<div class="pt-0.5">
+<div class="w-5 h-5 rounded border-2 border-primary-container bg-surface-container-low flex items-center justify-center cursor-pointer" title="Đang thực hiện">
+<span class="w-2 h-2 rounded-sm bg-primary-container"></span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-label-sm text-[11px] font-mono text-primary font-bold">BƯỚC 2/4</span>
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-[10px] bg-primary text-surface-container-lowest px-1.5 py-0.2 rounded font-medium uppercase">Đang làm</span>
+<span class="font-label-sm text-[10px] bg-primary-fixed/40 text-on-primary-fixed px-1.5 py-0.2 rounded font-mono">⏱ 15m</span>
+</div>
+</div>
+<h3 class="font-title-sm text-title-sm font-bold text-on-surface">
+            Thu phấn hoa đực &amp; quét đều đầu nhụy hoa cái
+          </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Vặt cánh hoa đực, dùng cọ số 4 xoa nhẹ hạt phấn 3 vòng quanh nhụy hoa cái.
+          </p>
+<div class="mt-space-sm space-y-1.5 bg-surface-container-low p-2 rounded-lg border border-surface-variant/60">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary w-3.5 h-3.5" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Hái 2 hoa đực vừa bung phấn</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary w-3.5 h-3.5" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Thụ phấn hoa cái #1 (mắt lá 7)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary w-3.5 h-3.5" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Thụ phấn hoa cái #2 &amp; #3 (mắt lá 8, 9)</span>
+</label>
+</div>
+<div class="mt-2 flex items-center gap-3">
+<button class="text-primary font-title-sm text-caption flex items-center gap-1 hover:underline cursor-pointer">
+<span class="material-symbols-outlined text-[15px]">play_circle</span>
+              Clip kỹ thuật (30s)
+            </button>
+<span class="text-outline-variant">•</span>
+<button class="text-on-surface-variant font-title-sm text-caption flex items-center gap-1 hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined text-[15px]">camera_alt</span>
+              Cận cảnh Live Cam
+            </button>
+</div>
+</div>
+</div>
+<!-- Step 3 (Pending) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-sm flex items-start gap-space-sm">
+<div class="pt-0.5">
+<div class="w-5 h-5 rounded border border-outline-variant bg-surface-container-low flex items-center justify-center cursor-pointer hover:border-primary" title="Chưa bắt đầu"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-label-sm text-[11px] font-mono text-outline">BƯỚC 3/4</span>
+<span class="font-label-sm text-[10px] bg-surface-container px-1.5 py-0.2 rounded text-outline font-mono">⏱ 15m</span>
+</div>
+<h3 class="font-title-sm text-title-sm font-semibold text-on-surface">
+            Tỉa sạch chồi nách và tua cuốn từ mắt lá 1 - 5
+          </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Cắt vát 45 độ sát nách lá, tạo độ thoáng gốc ngừa nấm mốc.
+          </p>
+</div>
+</div>
+<!-- Step 4 (Photo Proof) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-sm flex items-start gap-space-sm">
+<div class="pt-0.5">
+<div class="w-5 h-5 rounded border border-outline-variant bg-surface-container-low flex items-center justify-center cursor-pointer hover:border-primary" title="Chưa bắt đầu"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-label-sm text-[11px] font-mono text-outline">BƯỚC 4/4</span>
+<span class="font-label-sm text-[10px] bg-surface-container px-1.5 py-0.2 rounded text-on-surface-variant font-mono flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">photo_camera</span> Ảnh mẫu AI
+            </span>
+</div>
+<h3 class="font-title-sm text-title-sm font-semibold text-on-surface">
+            Chụp ảnh hoa đã thụ phấn lưu nhật ký
+          </h3>
+<div class="mt-space-sm grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+<div class="border border-dashed border-outline-variant rounded-lg p-2.5 flex items-center justify-center gap-2 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer" title="Tải ảnh lên">
+<span class="material-symbols-outlined text-[20px] text-outline">add_a_photo</span>
+<span class="font-title-sm text-caption text-on-surface font-semibold">Tải ảnh từ máy</span>
+</div>
+<div class="border border-surface-variant rounded-lg p-2 bg-surface-container-lowest flex items-center gap-2">
+<div class="w-10 h-10 rounded overflow-hidden shrink-0 border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Ảnh chụp cận cảnh hoa dưa leo đực thụ phấn" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbnR-5AAytL_JbMbferbq0oKj-DLy-kVH5Ps_ALoTOmsjjPf9McI2n0d2g_oO7zW_D9WDcDFBPZyS-5roZBX9hihG2Pznuf8E9KVvtvr8VwS8_AwqMTDMBObmfZwQZNt8uTArzMqwmImC_KWxCzAXFkVXKpbC8l8rmNN03cCk6tvdtI7bFBVTW1QoBZx06S9d1OW35jBOpdZyNTaJap5PBfqFu3dGhlmUr9nz1gPUAVYA0BL1phg"/>
+</div>
+<div class="flex-1 min-w-0">
+<span class="font-label-sm text-[10px] text-primary truncate block font-mono">SNAP-0822.JPG</span>
+<button class="text-primary font-label-sm text-[11px] hover:underline font-semibold block cursor-pointer">
+                  Dùng làm minh chứng
+                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Completion Banner -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 mt-space-md">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<div>
+<p class="font-title-sm text-title-sm font-semibold text-on-surface">Hoàn thành nhiệm vụ ngày 16/45</p>
+<p class="font-body-sm text-[12px] text-on-surface-variant">Đã xong 1/4 bước • Đang thực hiện thụ phấn đợt 1</p>
+</div>
+</div>
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container text-surface-container-lowest hover:bg-primary font-title-sm text-caption shadow-sm transition-all active:scale-[0.98] cursor-pointer shrink-0">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="">Đánh dấu hoàn thành ngày</span>
+</button>
+</div>
+</div>
+</section>
+<!-- ================= RIGHT COLUMN: SUPPLIES, AUTOMATION RULES & UPCOMING (Col 10-12) ================= -->
+<aside class="lg:col-span-3 flex flex-col gap-space-lg">
+<!-- Supplies & Tool Checklist -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-sm">
+<div class="flex items-center justify-between pb-space-xs border-b border-surface-variant mb-space-sm">
+<h2 class="font-title-sm text-title-sm font-semibold text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">handyman</span>
+          Vật tư hôm nay
+        </h2>
+<span class="font-label-sm text-[10px] bg-secondary-fixed text-on-secondary-fixed px-2 py-0.2 rounded font-mono font-medium">3 món</span>
+</div>
+<ul class="space-y-1.5">
+<li class="flex items-center justify-between p-1.5 px-2 rounded-lg bg-surface-container-low" title="Cọ lông mềm số 4 - Đã có sẵn">
+<div class="flex items-center gap-2 truncate">
+<span class="material-symbols-outlined text-[15px] text-primary">brush</span>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Cọ mềm số 4</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="font-label-sm text-[11px] font-mono text-outline">x1</span>
+<span class="material-symbols-outlined text-[16px] text-[#1b8a5a]" title="Đã có sẵn">check_circle</span>
+</div>
+</li>
+<li class="flex items-center justify-between p-1.5 px-2 rounded-lg bg-surface-container-low" title="Kéo tỉa cành mũi nhọn - Đã có sẵn">
+<div class="flex items-center gap-2 truncate">
+<span class="material-symbols-outlined text-[15px] text-primary">content_cut</span>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Kéo tỉa mũi nhọn</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="font-label-sm text-[11px] font-mono text-outline">x1</span>
+<span class="material-symbols-outlined text-[16px] text-[#1b8a5a]" title="Đã có sẵn">check_circle</span>
+</div>
+</li>
+<li class="flex items-center justify-between p-1.5 px-2 rounded-lg bg-surface-container-low" title="Cồn 70 độ sát khuẩn kéo - Đã có sẵn">
+<div class="flex items-center gap-2 truncate">
+<span class="material-symbols-outlined text-[15px] text-primary">sanitizer</span>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Cồn 70° sát khuẩn</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="font-label-sm text-[11px] font-mono text-outline">100ml</span>
+<span class="material-symbols-outlined text-[16px] text-[#1b8a5a]" title="Đã có sẵn">check_circle</span>
+</div>
+</li>
+</ul>
+<div class="mt-space-sm pt-space-xs border-t border-surface-variant flex items-center justify-between font-label-sm text-[11px]">
+<span class="text-outline">Chi phí:</span>
+<span class="font-mono text-on-surface font-semibold">845k <span class="font-normal text-outline">/ 1.2M</span></span>
+</div>
+</div>
+<!-- Compact IoT Automation Rules -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-sm"><div class="flex items-center justify-between pb-space-xs border-b border-surface-variant mb-space-sm"><h2 class="font-title-sm text-title-sm font-semibold text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-[17px] text-primary">smart_toy</span> Luật tự động hóa</h2><span class="font-label-sm text-[10px] bg-primary-fixed text-on-primary-fixed px-2 py-0.2 rounded font-mono font-medium">2 kích hoạt</span></div><div class="space-y-2"><div class="p-2.5 rounded-lg bg-surface-container-low border border-surface-variant/60"><div class="flex items-center justify-between mb-1"><span class="font-title-sm text-[13px] font-semibold text-on-surface flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-primary">water_drop</span> Bật van phun sương</span><span class="font-label-sm text-[10px] bg-primary text-white px-1.5 py-0.2 rounded font-mono">Bật</span></div><p class="font-body-sm text-[11px] text-on-surface-variant">Nếu nhiệt độ &gt; 32°C &amp; độ ẩm &lt; 50% trong 15p: Phun 45s.</p></div><div class="p-2.5 rounded-lg bg-surface-container-low border border-surface-variant/60"><div class="flex items-center justify-between mb-1"><span class="font-title-sm text-[13px] font-semibold text-on-surface flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-secondary">wb_twilight</span> Kéo lưới che nắng</span><span class="font-label-sm text-[10px] bg-surface-container px-1.5 py-0.2 rounded text-outline font-mono">Chờ</span></div><p class="font-body-sm text-[11px] text-on-surface-variant">Nếu cường độ nắng &gt; 65k Lux: Kéo rèm lưới giảm 40% nắng gắt.</p></div></div><div class="mt-space-sm pt-space-xs border-t border-surface-variant flex items-center justify-between font-label-sm text-[11px]"><span class="text-outline">Hệ thống tự ngắt an toàn:</span><span class="font-mono text-primary font-semibold">Đang bật</span></div></div>
+<!-- Lookahead Card: Next 2 Days Prep -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md border border-[#E5E0D8] shadow-sm"><div class="flex items-center justify-between pb-space-xs border-b border-surface-variant mb-space-sm"><h2 class="font-title-sm text-title-sm font-semibold text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-[17px] text-primary">calendar_clock</span> Kế hoạch 2 ngày tới</h2><span class="font-label-sm text-[10px] bg-surface-container px-2 py-0.2 rounded text-outline font-mono">N17 - N18</span></div><div class="space-y-2"><div class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-low"><div class="w-7 h-7 rounded-md bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-mono text-[11px] font-bold shrink-0">N17</div><div class="min-w-0 flex-1"><p class="font-title-sm text-[13px] font-semibold text-on-surface truncate">Mua phân Kali &amp; Chuẩn bị dung dịch tưới</p><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5">Chuẩn bị bón thúc kali nuôi quả non sau thụ phấn.</p></div></div><div class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container-low"><div class="w-7 h-7 rounded-md bg-surface-container-highest text-on-surface flex items-center justify-center font-mono text-[11px] font-semibold shrink-0">N18</div><div class="min-w-0 flex-1"><p class="font-title-sm text-[13px] font-semibold text-on-surface truncate">Thụ phấn đợt 2 &amp; Bọc lưới chùm hoa</p><p class="font-body-sm text-[11px] text-on-surface-variant mt-0.5">Kiểm tra hoa cái mắt lá 10-12 bung hoa sáng sớm.</p></div></div></div></div>
+</aside>
+</main>
+<!-- ================= BOTTOM NAVIGATION BAR (Mobile Responsive) ================= -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-md border-t border-surface-variant px-space-md py-2 flex items-center justify-around z-50">
+<a class="flex flex-col items-center gap-0.5 text-primary" href="#">
+<span class="material-symbols-outlined text-[22px] fill">task_alt</span>
+<span class="font-label-sm text-[10px] font-semibold">Hôm nay</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[22px]">videocam</span>
+<span class="font-label-sm text-[10px]">Live Cam</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[22px]">sensors</span>
+<span class="font-label-sm text-[10px]">Cảm biến</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[22px]">inventory_2</span>
+<span class="font-label-sm text-[10px]">Vật tư</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[22px]">more_horiz</span>
+<span class="font-label-sm text-[10px]">Thêm</span>
+</a>
+</nav>
+<!-- Emergency Alert Floating Button -->
+<div class="fixed bottom-6 right-6 z-50 flex items-center group">
+<button class="flex items-center gap-2 px-4 py-3 rounded-full bg-error text-on-error hover:bg-[#93000a] font-title-sm text-[13px] font-semibold shadow-lg transition-all active:scale-95 cursor-pointer border border-error/40 backdrop-blur-sm" title="Báo cáo sự cố khẩn cấp">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-surface-container-lowest"></span>
+</span>
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span class="">Báo sự cố</span>
+</button>
+</div>
+</body></html>
