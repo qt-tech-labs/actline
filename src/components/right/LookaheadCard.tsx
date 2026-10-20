@@ -2,14 +2,16 @@ import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
+import { clampProjectDay } from "@/lib/day";
 import { getCurrentUser } from "@/server/auth";
 import { getLookahead } from "@/server/services/day";
 import { getProjectOverview } from "@/server/services/projects";
 
-export async function LookaheadCard({ projectId }: { projectId: string }) {
+export async function LookaheadCard({ projectId, day }: { projectId: string; day?: number }) {
   const user = await getCurrentUser();
   const overview = await getProjectOverview(user.id, projectId);
-  const [t, days] = await Promise.all([getTranslations("lookahead"), getLookahead(projectId, overview.currentDay)]);
+  const selected = clampProjectDay(day, overview.totalDays, overview.currentDay);
+  const [t, days] = await Promise.all([getTranslations("lookahead"), getLookahead(projectId, selected)]);
 
   return (
     <Card as="section" aria-label={t("title")} className="p-space-md shadow-sm">
@@ -25,7 +27,7 @@ export async function LookaheadCard({ projectId }: { projectId: string }) {
             <li key={d.day} className={cn("border-l-2 pl-2", i === 0 ? "border-primary-container" : "border-surface-variant")}>
               <div className="flex items-center justify-between font-mono text-[11px]">
                 <span className={cn("font-semibold", i === 0 ? "text-primary" : "text-on-surface-variant")}>
-                  {d.day === overview.currentDay + 1 ? t("tomorrow", { day: d.day }) : t("day", { day: d.day })}
+                  {d.day === selected + 1 ? t("tomorrow", { day: d.day }) : t("day", { day: d.day })}
                 </span>
                 {d.estimatedMinutes ? <span className="text-outline">{t("minutes", { count: d.estimatedMinutes })}</span> : null}
               </div>

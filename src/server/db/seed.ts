@@ -133,8 +133,8 @@ async function main() {
     { day: 12, label: "Bón lót", title: "N12: Bón hữu cơ Bokashi" },
     { day: 14, label: "Tỉa nhánh", title: "N14: Cắt tỉa nhánh phụ" },
     { day: 15, label: "Kiểm tra ẩm", title: "N15: Kiểm tra ẩm & Chuẩn bị thụ phấn" },
-    { day: 16, label: "Thụ phấn đợt 1", title: "Hôm nay (N16): Thụ phấn hoa cái đợt 1 & tỉa chồi nách 1-5" },
-    { day: 17, label: "Mua Kali", title: "N17 (Ngày mai): Mua phân Kali hữu cơ & chuẩn bị tưới", icon: "shopping_basket", kind: "shopping" },
+    { day: 16, label: "Thụ phấn đợt 1", title: "N16: Thụ phấn hoa cái đợt 1 & tỉa chồi nách 1-5" },
+    { day: 17, label: "Mua Kali", title: "N17: Mua phân Kali hữu cơ & chuẩn bị tưới", icon: "shopping_basket", kind: "shopping" },
     { day: 18, label: "Đợt 2", title: "N18: Thụ phấn đợt 2 & Bọc lưới chùm hoa" },
     { day: 20, label: "", title: "N20: Kiểm tra phát triển rễ", isMinor: true },
     { day: 22, label: "Bọc trái", title: "N22: Bọc túi bảo vệ trái non", icon: "shield" },
@@ -282,7 +282,151 @@ async function main() {
     { projectId, position: 3, name: "Cảnh báo sâu đêm", condition: "Bật hồng ngoại từ 21:00", enabled: false },
   ]);
 
+  await seedOfflineHub(user.id);
+
   console.log(`Seeded demo user ${email} with project ${projectId}`);
+}
+
+/**
+ * A second IoT project whose hub stopped reporting: it renders the "no connect" state
+ * (offline chip, dimmed sensors, RTSP lost, safe mode) so the state can be seen.
+ */
+async function seedOfflineHub(userId: string) {
+  const CURRENT = 9;
+  const [greenhouse] = await db
+    .insert(s.projects)
+    .values({
+      userId,
+      name: "Vườn rau nhà kính tầng 5",
+      icon: "sensors",
+      startDate: localDate(-(CURRENT - 1)),
+      totalDays: 30,
+      iotEnabled: true,
+      budgetVnd: 1_500_000,
+      expectedRevenueVnd: 0,
+    })
+    .returning();
+  if (!greenhouse) throw new Error("greenhouse insert failed");
+  const projectId = greenhouse.id;
+
+  await db.insert(s.projectStages).values([
+    { projectId, name: "Giai đoạn 1: Gieo hạt & Ủ ẩm", startDay: 1, endDay: 10 },
+    { projectId, name: "Giai đoạn 2: Cây con & Tỉa chồi", startDay: 11, endDay: 20 },
+    { projectId, name: "Giai đoạn 3: Bón thúc & Phòng bệnh", startDay: 21, endDay: 30 },
+  ]);
+
+  await db.insert(s.milestones).values([
+    { projectId, day: 1, label: "Gieo hạt", title: "N01: Gieo hạt & Ủ ẩm", icon: "check" },
+    { projectId, day: 5, label: "Nảy mầm", title: "N05: Nảy mầm & Ra lá mầm" },
+    { projectId, day: 9, label: "Tưới tay", title: `N${CURRENT}: Tưới tay & Bổ sung nước` },
+    { projectId, day: 12, label: "Mua phân", title: "N12: Mua phân hữu cơ", icon: "shopping_basket", kind: "shopping" },
+    { projectId, day: 30, label: "Thu hoạch", title: "N30: Thu hoạch đợt 1", icon: "flag", kind: "target" },
+  ]);
+
+  const [plan] = await db
+    .insert(s.dayPlans)
+    .values({
+      projectId,
+      day: CURRENT,
+      title: "Tưới tay & bổ sung nước cho luống rau",
+      summary: "Hub đang mất kết nối nên chuyển sang tưới tay theo lịch và kiểm tra độ ẩm bằng tay.",
+    })
+    .returning();
+  if (!plan) throw new Error("greenhouse plan insert failed");
+
+  const inserted = await db
+    .insert(s.steps)
+    .values([
+      { dayPlanId: plan.id, position: 1, status: "done", completedAt: todayAt("07:10"), title: "Kiểm tra độ ẩm luống bằng tay", description: "Nhúng ngón tay sâu 3cm vào giá thể, đã khô nhẹ." },
+      { dayPlanId: plan.id, position: 2, estimatedMinutes: 25, title: "Tưới tay luống rau theo bộ chuôi 8L", description: "Tưới đều tay, tránh đọng nước trên lá non." },
+      { dayPlanId: plan.id, position: 3, estimatedMinutes: 10, title: "Ghi nhận chỉ số để đối chiếu khi hub kết nối lại", description: "Ghi nhiệt độ và độ ẩm ước vào sổ tay để so sánh với dữ liệu cảm biến." },
+    ])
+    .returning();
+  const step = (pos: number) => {
+    const found = inserted.find((x) => x.position === pos);
+    if (!found) throw new Error(`greenhouse step ${pos} missing`);
+    return found;
+  };
+
+  await db.insert(s.stepItems).values([
+    { stepId: step(2).id, position: 1, label: "Bình 8L đầy nước tưới", done: true },
+    { stepId: step(2).id, position: 2, label: "Tưới mỗi luống 2 lần" },
+    { stepId: step(3).id, position: 1, label: "Ghi nhiệt độ ước tay" },
+  ]);
+
+  await db.insert(s.supplies).values([
+    { dayPlanId: plan.id, name: "Bình tưới 8L", icon: "sanitizer", quantity: "x1", available: true },
+    { dayPlanId: plan.id, name: "Que đo độ ẩm tay", icon: "sensors", quantity: "x1", available: true },
+  ]);
+
+  // The hub stopped reporting 42 minutes ago: the UI reads this as "no connect".
+  const [hub] = await db
+    .insert(s.hubs)
+    .values({
+      projectId,
+      name: "Hub v2",
+      location: "Kệ sắp tầng 5",
+      batteryPct: 12,
+      online: false,
+      lastSeenAt: new Date(Date.now() - 42 * 60_000),
+      config: DEMO_HUB_CONFIG,
+    })
+    .returning();
+  if (!hub) throw new Error("greenhouse hub insert failed");
+
+  await db.insert(s.devices).values([
+    { hubId: hub.id, kind: "gateway", name: "ESP32 Gateway", status: "offline" },
+    { hubId: hub.id, kind: "soil_probe", name: "Đầu dò ẩm #1 & #2", status: "offline" },
+    { hubId: hub.id, kind: "valve", name: "Van Solenoid tưới", status: "offline" },
+    {
+      hubId: hub.id, kind: "camera", name: "Cam-01", status: "offline",
+      meta: {
+        label: "Cam-01 (Góc luống rau)", resolution: "1080p", fps: 24,
+        imageUrl:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuAmaH5bu4ORRgH40NUSyv8WLwFyhwLDpYdbFKMo6IWYZ4HCo0Q8qMyPzmuAdlCnfzFF2rKOA3ZVjlyHHPINPRXL5DJ0s5Caj8wFil_MeX_ES0ljSBTpZowuT2TdmDVt6gsSwx7xJnjs9UxjlnstjQ01yAMKqaQm3LuHH-YdxD8jwSQKqRNz1h7OxRoDrxEen3r7NQsjJRbAkvq1CCkRQ8jvcWsbjQkP7_70oYtvg6uthfVsXwpU-g",
+      },
+    },
+  ]);
+
+  await db.insert(s.sensorTargets).values([
+    { projectId, metric: "air_temperature", min: 24, max: 30 },
+    { projectId, metric: "air_humidity", min: 65, max: 75 },
+    { projectId, metric: "soil_moisture", min: 45, max: 70 },
+    { projectId, metric: "substrate_ph", min: 6.0, max: 6.8 },
+    { projectId, metric: "light_intensity", min: 30_000, max: 60_000 },
+  ]);
+
+  // The stored readings stop 42 minutes ago, where the hub went quiet.
+  const POINTS = 12;
+  const stepMs = 30 * 60_000;
+  const end = Date.now() - 42 * 60_000;
+  const specs = [
+    { metric: "air_temperature", base: 27.5, amp: 1.6, last: 29.1, seed: 11 },
+    { metric: "air_humidity", base: 72, amp: 3, last: 66, seed: 12 },
+    { metric: "soil_moisture", base: 52, amp: 7, last: 38, seed: 13 },
+    { metric: "substrate_ph", base: 6.4, amp: 0.15, last: 6.2, seed: 14 },
+    { metric: "light_intensity", base: 34_000, amp: 6_000, last: 41_000, seed: 15 },
+  ] as const;
+  await db.insert(s.sensorReadings).values(
+    specs.flatMap(({ metric, base, amp, last, seed }) =>
+      series(POINTS, base, amp, last, seed).map((value, i) => ({
+        projectId,
+        metric,
+        value: Math.round(value * 100) / 100,
+        recordedAt: new Date(end - (POINTS - 1 - i) * stepMs),
+      })),
+    ),
+  );
+
+  await db.insert(s.aiInsights).values([
+    { projectId, kind: "camera", body: "Camera phát hiện **2 lá rau úng vàng** ở luống 3, cần tưới tay trong hôm nay." },
+    { projectId, kind: "day", day: CURRENT, body: "Hub mất kết nối, đã chuyển sang chế độ tưới tay theo lịch.", confidencePct: 74 },
+  ]);
+
+  await db.insert(s.automationRules).values([
+    { projectId, position: 1, name: "Tưới nhỏ giọt bổ sung", condition: "Đất < 35% sau 16:30 • Van #1", enabled: true },
+    { projectId, position: 2, name: "Quạt giảm nhiệt", condition: "> 33.5°C • Quạt 12V", enabled: true },
+  ]);
 }
 
 main()

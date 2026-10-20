@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { MobileNav } from "@/components/layout/MobileNav";
@@ -7,7 +8,7 @@ import { MetricsGrid } from "@/components/metrics/MetricsGrid";
 import { FinanceCard } from "@/components/right/FinanceCard";
 import { LookaheadCard } from "@/components/right/LookaheadCard";
 import { RulesCard } from "@/components/right/RulesCard";
-import { SuppliesCard } from "@/components/right/SuppliesCard";
+import { PurchaseCard } from "@/components/right/PurchaseCard";
 import { HardwareCard } from "@/components/sidebar/HardwareCard";
 import { LiveCamCard } from "@/components/sidebar/LiveCamCard";
 import { ProjectList } from "@/components/sidebar/ProjectList";
@@ -18,9 +19,11 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { getCurrentUser } from "@/server/auth";
 import { getProjectOverview, resolveProjectId } from "@/server/services/projects";
 
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ project?: string }> }) {
-  const [{ project }, user] = await Promise.all([searchParams, getCurrentUser()]);
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ project?: string; day?: string }> }) {
+  const [{ project, day }, user] = await Promise.all([searchParams, getCurrentUser()]);
   const projectId = await resolveProjectId(user.id, project);
+  // The milestone track picks the day the main view shows.
+  const selectedDay = day ? Number(day) : undefined;
 
   if (!projectId) return <EmptyState />;
   const { iotEnabled } = await getProjectOverview(user.id, projectId);
@@ -32,7 +35,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <AppHeader projectId={projectId} />
       </Suspense>
       <Suspense fallback={<Skeleton className="h-[7.5rem] rounded-none" />}>
-        <ProgressBar projectId={projectId} />
+        <ProgressBar projectId={projectId} selectedDay={selectedDay} />
       </Suspense>
       {iotEnabled ? (
         <Suspense fallback={<Skeleton className="mx-auto mt-space-lg h-52 w-full max-w-[1720px]" />}>
@@ -59,13 +62,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
         <div className="flex flex-col gap-space-md lg:col-span-6">
           <Suspense fallback={<Skeleton className="h-[32rem]" />}>
-            <TodaySection projectId={projectId} />
+            <TodaySection projectId={projectId} day={selectedDay} />
           </Suspense>
         </div>
 
         <aside className="flex flex-col gap-space-lg lg:col-span-3">
           <Suspense fallback={<Skeleton className="h-52" />}>
-            <SuppliesCard projectId={projectId} />
+            <PurchaseCard projectId={projectId} />
           </Suspense>
           <Suspense fallback={<Skeleton className="h-52" />}>
             <FinanceCard projectId={projectId} />
@@ -76,7 +79,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             </Suspense>
           ) : null}
           <Suspense fallback={<Skeleton className="h-32" />}>
-            <LookaheadCard projectId={projectId} />
+            <LookaheadCard projectId={projectId} day={selectedDay} />
           </Suspense>
         </aside>
       </main>
@@ -96,6 +99,13 @@ async function EmptyState() {
         <Icon name="psychiatry" className="text-[40px] text-outline" />
         <h1 className="font-display text-headline-md">{t("title")}</h1>
         <p className="text-body-md text-on-surface-variant">{t("hint")}</p>
+        <Link
+          href="/new"
+          className="mt-2 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-title-sm text-on-primary shadow-sm interactive hover:bg-primary-container active:scale-[0.98]"
+        >
+          <Icon name="auto_awesome" fill className="text-[18px]" />
+          {t("create")}
+        </Link>
       </main>
     </>
   );

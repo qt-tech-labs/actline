@@ -21,10 +21,12 @@ export const getMetricCards = cache(async (projectId: string): Promise<MetricCar
   if (!project) return [];
 
   const byMetric = new Map<string, number[]>();
+  const lastReadAt = new Map<string, Date>();
   for (const r of readings) {
     const list = byMetric.get(r.metric);
     if (list) list.push(r.value);
     else byMetric.set(r.metric, [r.value]);
+    lastReadAt.set(r.metric, r.at);
   }
   const targetByMetric = new Map(targets.map((t) => [t.metric, t]));
 
@@ -38,6 +40,6 @@ export const getMetricCards = cache(async (projectId: string): Promise<MetricCar
     // Downsample long histories so the payload sent to the client stays small.
     const stride = Math.ceil(values.length / MAX_POINTS);
     const series = stride > 1 ? values.filter((_, i) => (values.length - 1 - i) % stride === 0) : values;
-    return [{ metric, value, min: target.min, max: target.max, avg, status, series }];
+    return [{ metric, value, min: target.min, max: target.max, avg, status, series, lastReadingAt: (lastReadAt.get(metric) ?? null)?.toISOString() ?? null }];
   });
 });

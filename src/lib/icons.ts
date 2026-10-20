@@ -4,16 +4,22 @@
  * Add a name here whenever you use a new <Icon name="..."> or store a new icon name in the database.
  */
 export const ICON_NAMES = [
-  "account_balance_wallet", "add_a_photo", "add_circle", "alarm", "architecture", "autorenew",
+  "account_balance_wallet", "add_a_photo", "add_circle", "alarm", "architecture", "arrow_forward",
+  "auto_awesome", "autorenew",
   "battery_5_bar", "bluetooth", "brush", "build", "calendar_month", "calendar_today", "camera_alt", "check",
-  "check_circle", "chevron_left", "chevron_right", "close", "cloud_sync", "colorize", "content_cut",
-  "done_all", "edit_note", "event_busy", "event_upcoming", "expand_more", "flag", "fullscreen", "handyman",
-  "help_outline", "hub", "humidity_mid", "inventory_2", "more_horiz", "network_ping", "neurology",
-  "notifications", "pace", "pest_control", "photo_camera", "photo_library", "pin", "play_arrow",
-  "play_circle", "precision_manufacturing", "psychiatry", "recycling", "router", "sanitizer", "save",
-  "science", "sensors", "settings", "settings_input_component", "shield", "shopping_basket", "shopping_cart",
-  "sync", "task_alt", "thermostat", "timelapse", "timeline", "trending_down", "trending_up", "tune", "valve",
-  "verified", "videocam", "visibility", "warning", "water_drop", "wb_sunny", "wifi",
+  "check_circle", "chevron_left", "chevron_right", "close", "cloud_off", "cloud_sync", "colorize", "content_cut",
+  "directions_run", "done_all", "eco", "delete", "edit_note", "event_busy", "event_repeat", "event_upcoming",
+  "expand_more", "file_download", "flag", "fullscreen", "handyman",
+  "help_outline", "hub", "humidity_mid", "inventory_2", "linear_scale", "location_on", "lock_clock", "more_horiz",
+  "network_ping", "neurology",
+  "notifications", "pace", "payments", "pest_control", "photo_camera", "photo_library", "pin", "play_arrow",
+  "play_circle", "precision_manufacturing", "psychiatry", "psychology", "radio_button_unchecked", "recycling", "refresh", "router", "sanitizer", "save",
+  "school", "science", "sensors", "sensors_off", "set_meal", "settings", "settings_backup_restore",
+  "settings_input_component", "shield",
+  "shield_with_heart", "shopping_basket", "shopping_cart", "smart_toy",
+  "sync", "task", "task_alt", "thermostat", "timelapse", "timeline", "timer", "tips_and_updates", "today",
+  "trending_down", "trending_up", "tune", "unfold_more", "valve",
+  "verified", "videocam", "videocam_off", "visibility", "warning", "water_drop", "wb_sunny", "wifi", "wifi_off",
 ] as const;
 
 export const ICON_FONT_HREF =

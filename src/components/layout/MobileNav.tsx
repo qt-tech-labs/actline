@@ -6,7 +6,7 @@ const ITEMS = [
   { key: "today", icon: "task_alt", href: "/", active: true },
   { key: "camera", icon: "videocam", href: "#live-cam", iot: true },
   { key: "sensors", icon: "sensors", href: "#sensors", iot: true },
-  { key: "supplies", icon: "inventory_2" },
+  { key: "supplies", icon: "inventory_2", href: "#supplies" },
   { key: "more", icon: "more_horiz" },
 ] as const;
 

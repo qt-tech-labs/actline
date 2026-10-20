@@ -1,19 +1,49 @@
 import "server-only";
-import { eq, sum } from "drizzle-orm";
+
+import { desc, eq } from "drizzle-orm";
 import { cache } from "react";
-import type { FinanceDto } from "@/lib/types";
+import type { ExpenseDto, FinanceDto } from "@/lib/types";
 import { db } from "../db";
 import { expenses } from "../db/schema";
 import { getProjectRow } from "./projects";
 
+/** The money of a project: what went out, what came in, and the result. */
 export const getFinance = cache(async (userId: string, projectId: string): Promise<FinanceDto> => {
-  const [project, [total]] = await Promise.all([
+  const [project, rows] = await Promise.all([
     getProjectRow(userId, projectId),
-    db.select({ total: sum(expenses.amountVnd) }).from(expenses).where(eq(expenses.projectId, projectId)),
+    db
+      .select({
+        id: expenses.id,
+        day: expenses.day,
+        label: expenses.label,
+        amountVnd: expenses.amountVnd,
+        kind: expenses.kind,
+        supplyId: expenses.supplyId,
+        createdAt: expenses.createdAt,
+      })
+      .from(expenses)
+      .where(eq(expenses.projectId, projectId))
+      .orderBy(desc(expenses.createdAt)),
   ]);
+
+  const spentVnd = rows.filter((row) => row.kind === "cost").reduce((sum, row) => sum + row.amountVnd, 0);
+  const incomeVnd = rows.filter((row) => row.kind === "income").reduce((sum, row) => sum + row.amountVnd, 0);
+  const list: ExpenseDto[] = rows.map((row) => ({
+    id: row.id,
+    day: row.day,
+    label: row.label,
+    amountVnd: row.amountVnd,
+    kind: row.kind,
+    supplyId: row.supplyId,
+    createdAt: row.createdAt.toISOString(),
+  }));
+
   return {
-    spentVnd: Number(total?.total ?? 0),
+    spentVnd,
+    incomeVnd,
     budgetVnd: project.budgetVnd,
     expectedRevenueVnd: project.expectedRevenueVnd,
+    profitVnd: incomeVnd + project.expectedRevenueVnd - spentVnd,
+    expenses: list,
   };
 });

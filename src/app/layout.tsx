@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
+import { ViewerTimezone } from "@/components/layout/ViewerTimezone";
 import { ICON_FONT_HREF } from "@/lib/icons";
 import "./globals.css";
 
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = { themeColor: "#faf9f6", width: "device-width", initialScale: 1 };
 
 // Only ship the namespaces that client components actually read.
-const CLIENT_NAMESPACES = ["timeline", "steps", "rules", "camera", "dialogs", "switcher", "common", "hubSettings", "progress"] as const;
+const CLIENT_NAMESPACES = ["timeline", "steps", "rules", "camera", "dialogs", "switcher", "common", "hubSettings", "progress", "metrics", "newProject", "purchases", "finance"] as const;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
@@ -33,7 +34,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="stylesheet" href={ICON_FONT_HREF} precedence="default" />
       </head>
       <body className="flex min-h-screen flex-col bg-surface text-on-surface antialiased">
-        <NextIntlClientProvider messages={clientMessages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={clientMessages}>
+          <ViewerTimezone />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -15,10 +15,9 @@ export function IncidentFab({ projectId }: { projectId: string }) {
           type="button"
           onClick={() => setOpen(true)}
           title={t("incidentTitle")}
-          className="flex items-center gap-2 rounded-full border border-error/40 bg-error px-4 py-3 text-[13px] font-semibold text-on-error shadow-lg backdrop-blur-sm transition-all hover:bg-on-error-container active:scale-95"
+          className="flex items-center gap-2 rounded-full border border-error/40 bg-error px-4 py-3 text-[13px] font-semibold text-on-error shadow-lg backdrop-blur-sm interactive hover:bg-on-error-container active:scale-95"
         >
           <span aria-hidden="true" className="relative flex size-2.5">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-error-container opacity-75" />
             <span className="relative inline-flex size-2.5 rounded-full bg-white" />
           </span>
           <Icon name="warning" />

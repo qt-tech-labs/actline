@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
-import { ComingSoonButton } from "@/components/ui/ComingSoon";
 import { cn } from "@/lib/cn";
 import { getCurrentUser } from "@/server/auth";
 import { listProjects } from "@/server/services/projects";
@@ -18,9 +17,14 @@ export async function ProjectList({ activeId }: { activeId: string }) {
           <h2 className="text-title-sm text-on-surface">{t("title")}</h2>
           <p className="font-mono text-label-sm text-on-surface-variant">{t("count", { count: projects.length })}</p>
         </div>
-        <ComingSoonButton label={t("add")} className="flex size-7 items-center justify-center rounded-lg bg-surface-container text-primary">
+        <Link
+          href="/new"
+          title={t("add")}
+          aria-label={t("add")}
+          className="flex size-7 items-center justify-center rounded-lg bg-surface-container text-primary transition-colors hover:bg-primary-container hover:text-white"
+        >
           <Icon name="add_circle" className="text-[18px]" />
-        </ComingSoonButton>
+        </Link>
       </div>
       <nav className="space-y-1">
         {projects.map((p) => {

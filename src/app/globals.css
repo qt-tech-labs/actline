@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* `design/` holds reference HTML mockups: they are not part of the build. */
+@source not "../../design";
+
 @theme {
   --color-*: initial;
   --color-white: #ffffff;
@@ -56,6 +59,10 @@
   --radius-DEFAULT: 0.25rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
+
+  /* Motion: strong curves, short durations. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
 
   --spacing-space-xs: 0.25rem;
   --spacing-space-sm: 0.5rem;
@@ -130,6 +137,10 @@
     outline: 2px solid var(--color-primary-container);
     outline-offset: 2px;
   }
+  /* Anything that acts should look like it acts. */
+  :where(button, a[href], select, summary, label[for], [role="button"], [role="switch"], [role="tab"]):not(:disabled):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--color-surface); }
   ::-webkit-scrollbar-thumb { background: var(--color-outline-variant); border-radius: 9999px; }
@@ -140,6 +151,29 @@
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 }
+
+/**
+ * The one transition the app uses for anything that responds to a press:
+ * named properties only (never `all`), GPU-friendly, 150ms, strong ease-out.
+ */
+@utility interactive {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out-strong);
+}
+
+/* Switching days in the milestone track: the new day slides in from the side
+   the user came from. Transform + opacity only, 200ms, strong ease-out. */
+@keyframes day-plan-in-forward {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes day-plan-in-back {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.day-plan-frame-forward { animation: day-plan-in-forward 200ms var(--ease-out-strong) both; }
+.day-plan-frame-back { animation: day-plan-in-back 200ms var(--ease-out-strong) both; }
 
 @utility glow-ok {
   box-shadow: 0 0 6px rgba(27, 138, 90, 0.5);

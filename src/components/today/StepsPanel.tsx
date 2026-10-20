@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useOptimistic, useState, useTransition } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card";
-import { api } from "@/lib/api-client";
+import { api, apiErrorDetail } from "@/lib/api-client";
 import { cn } from "@/lib/cn";
 import { statusFromItems } from "@/lib/steps";
 import type { StepDto } from "@/lib/types";
@@ -49,26 +48,38 @@ export function StepsPanel({
   const t = useTranslations("steps");
   const tc = useTranslations("common");
   const format = useFormatter();
-  const router = useRouter();
-  const [state, apply] = useOptimistic<State, Action>({ steps, completed }, reduce);
+  // The panel owns its day: the server hands over the first value, the client
+  // keeps it and reconciles against the day plan — not against the whole page.
+  const [server, setServer] = useState<State>({ steps, completed });
+  const [state, apply] = useOptimistic<State, Action>(server, reduce);
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  // Optimistic update, REST call, then refresh server data. On failure the optimistic state rolls back.
+  /** Pulls the day plan back so the client and the server agree again. */
+  const reconcile = async () => {
+    const res = await fetch(`/api/v1/projects/${projectId}/days/${day}`, { headers: { Accept: "application/json" } });
+    if (!res.ok) return;
+    const json = (await res.json()) as { data?: { steps: StepDto[]; completed: boolean } };
+    if (json?.data) setServer({ steps: json.data.steps, completed: json.data.completed });
+  };
+
+  // Optimistic update, REST call, then the day plan back. On failure the optimistic state rolls back.
   const mutate = (action: Action, request: () => Promise<unknown>) => {
     setError(null);
     startTransition(async () => {
       apply(action);
       try {
         await request();
-        router.refresh();
-      } catch {
-        setError(tc("genericError"));
+        await reconcile();
+      } catch (cause) {
+        // The server explains why (e.g. the day still has open action items).
+        setError(apiErrorDetail(cause) ?? tc("genericError"));
       }
     });
   };
 
   const doneCount = state.steps.filter((s) => s.status === "done").length;
+  const openCount = state.steps.length - doneCount;
 
   return (
     <>
@@ -203,15 +214,21 @@ export function StepsPanel({
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          disabled={state.completed}
-          onClick={() => mutate({ type: "complete" }, () => api(`/projects/${projectId}/days/${day}/complete`, { method: "POST" }))}
-          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-primary-container px-5 py-2.5 text-caption text-white shadow-sm transition-all hover:bg-primary active:scale-[0.98] disabled:cursor-default disabled:opacity-60 sm:w-auto"
-        >
-          <Icon name="check_circle" className="text-[18px]" />
-          {t("completeAction")}
-        </button>
+        <div className="flex w-full shrink-0 flex-col items-stretch gap-1 sm:w-auto">
+          <button
+            type="button"
+            disabled={state.completed || openCount > 0}
+            title={openCount > 0 ? t("completeBlocked", { count: openCount }) : undefined}
+            onClick={() => mutate({ type: "complete" }, () => api(`/projects/${projectId}/days/${day}/complete`, { method: "POST" }))}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-container px-5 py-2.5 text-caption text-white shadow-sm interactive hover:bg-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          >
+            <Icon name="check_circle" className="text-[18px]" />
+            {t("completeAction")}
+          </button>
+          {openCount > 0 && !state.completed ? (
+            <span className="text-center text-[11px] text-outline">{t("completeBlocked", { count: openCount })}</span>
+          ) : null}
+        </div>
       </Card>
       {error ? <p role="alert" className="mt-2 text-body-sm text-error">{error}</p> : null}
     </>

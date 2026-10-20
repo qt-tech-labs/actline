@@ -1,0 +1,1 @@
+ALTER TABLE "blueprints" ADD COLUMN "params" jsonb NOT NULL;

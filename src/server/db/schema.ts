@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import type { HubConfig } from "@/lib/hub-config";
+import type { Blueprint, BlueprintParams } from "@/lib/types";
 import {
   bigserial,
   boolean,
@@ -35,6 +36,7 @@ export const insightKind = pgEnum("insight_kind", ["camera", "day"]);
 export const hubCommandKind = pgEnum("hub_command_kind", ["valve_test"]);
 export const hubCommandStatus = pgEnum("hub_command_status", ["queued", "sent", "done", "failed"]);
 export const severity = pgEnum("severity", ["low", "medium", "high"]);
+export const expenseKind = pgEnum("expense_kind", ["cost", "income"]);
 
 const id = () => uuid("id").primaryKey().default(sql`gen_random_uuid()`);
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
@@ -65,6 +67,39 @@ export const projects = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("projects_user_idx").on(t.userId)],
+);
+
+/**
+ * A plan the user is still shaping. The AI plan is not reproducible from the input
+ * (unlike the template engine), so the generated blueprint is stored as-is until the
+ * project is created from it.
+ */
+export const blueprints = pgTable(
+  "blueprints",
+  {
+    id: id(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    prompt: text("prompt").notNull(),
+    totalDays: integer("total_days").notNull(),
+    dailyMinutes: integer("daily_minutes").notNull(),
+    budgetVnd: integer("budget_vnd").notNull(),
+    experience: text("experience").notNull(),
+    /** Explicit IoT choice; null means "follow the plan's suggestion". */
+    iotEnabled: boolean("iot_enabled"),
+    /** The knobs as the user left them; null means "the AI decides". */
+    params: jsonb("params").$type<BlueprintParams>().notNull(),
+    /** The whole blueprint DTO, edited by the user before the project is created. */
+    payload: jsonb("payload").$type<Blueprint>().notNull(),
+    /** Model that produced the plan ("gemini-3.8-flash"), null for the template engine. */
+    model: text("model"),
+    /** Which engine produced the plan. */
+    engine: text("engine").notNull().default("template"),
+    /** "ready" once the plan can be previewed and started. */
+    status: text("status").notNull().default("ready"),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("blueprints_user_idx").on(t.userId)],
 );
 
 export const projectStages = pgTable(
@@ -165,6 +200,14 @@ export const supplies = pgTable(
     icon: text("icon").notNull(),
     quantity: text("quantity").notNull(),
     available: boolean("available").notNull().default(true),
+    /** Planned unit price in VND. */
+    unitPriceVnd: integer("unit_price_vnd"),
+    /** What was actually paid, once the item is bought. */
+    actualPriceVnd: integer("actual_price_vnd"),
+    /** Project day the item has to be bought by. */
+    buyByDay: integer("buy_by_day"),
+    /** Project day the item was actually bought. */
+    boughtDay: integer("bought_day"),
   },
   (t) => [index("supplies_plan_idx").on(t.dayPlanId)],
 );
@@ -177,6 +220,11 @@ export const expenses = pgTable(
     day: integer("day").notNull(),
     label: text("label").notNull(),
     amountVnd: integer("amount_vnd").notNull(),
+    /** "cost" is money out, "income" is money in. */
+    kind: expenseKind("kind").notNull().default("cost"),
+    /** The planned item this money was spent on, when there is one. */
+    supplyId: uuid("supply_id").references(() => supplies.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
   },
   (t) => [index("expenses_project_idx").on(t.projectId)],
 );
@@ -333,4 +381,8 @@ export const suppliesRelations = relations(supplies, ({ one }) => ({
 export const hubsRelations = relations(hubs, ({ many }) => ({ devices: many(devices) }));
 export const devicesRelations = relations(devices, ({ one }) => ({
   hub: one(hubs, { fields: [devices.hubId], references: [hubs.id] }),
+}));
+
+export const blueprintsRelations = relations(blueprints, ({ one }) => ({
+  user: one(users, { fields: [blueprints.userId], references: [users.id] }),
 }));

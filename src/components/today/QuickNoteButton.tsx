@@ -13,7 +13,7 @@ export function QuickNoteButton({ projectId, day }: { projectId: string; day: nu
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 py-1 text-[12px] font-semibold text-on-surface shadow-sm transition-all hover:bg-surface-container active:scale-95"
+        className="flex items-center gap-1.5 rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 py-1 text-[12px] font-semibold text-on-surface shadow-sm interactive hover:bg-surface-container active:scale-95"
       >
         <Icon name="edit_note" className="text-[16px] text-primary" />
         {t("noteTitle")}

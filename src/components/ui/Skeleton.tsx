@@ -1,6 +1,9 @@
 import { cn } from "@/lib/cn";
 
-/** Fixed-height placeholder so streamed sections don't shift the layout when they arrive. */
+/**
+ * Fixed-height placeholder so streamed sections don't shift the layout when they arrive.
+ * Deliberately static: a dozen pulsing blocks turned every navigation into a flicker.
+ */
 export function Skeleton({ className }: { className?: string }) {
-  return <div aria-hidden="true" className={cn("animate-pulse rounded-xl bg-surface-container", className)} />;
+  return <div aria-hidden="true" className={cn("rounded-xl bg-surface-container", className)} />;
 }

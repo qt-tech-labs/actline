@@ -18,6 +18,7 @@
     "nav": {
       "label": "Điều hướng chính",
       "today": "Hôm nay",
+      "todayCreate": "Lộ trình hôm nay",
       "timeline": "Dòng thời gian",
       "inventory": "Kho vật tư",
       "photoLog": "Nhật ký ảnh"
@@ -25,7 +26,10 @@
     "notifications": "Thông báo",
     "help": "Trợ giúp",
     "settings": "Cài đặt & cấu hình",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "mode": "Chế độ:",
+    "modeName": "Tạo dự án mới với AI",
+    "modeSwitch": "Đổi chế độ làm việc"
   },
   "switcher": {
     "label": "Đổi dự án",
@@ -36,7 +40,9 @@
     "battery": "Mức pin trạm",
     "synced": "Đồng bộ {time}",
     "hubSettings": "Cài đặt kết nối IoT",
-    "offline": "Mất kết nối",
+    "offline": "Offline",
+    "signalLost": "Mất tín hiệu {time}",
+    "reconnect": "Kết nối lại",
     "connectIot": "Kết nối IoT",
     "connectIotHint": "Dự án này chưa dùng IoT. Bật để theo dõi cảm biến, camera và van tưới."
   },
@@ -45,7 +51,15 @@
     "prev": "Xem các mốc trước",
     "next": "Xem các mốc sau",
     "today": "N{day} • Hôm nay",
-    "dayLabel": "N{day}"
+    "dayLabel": "N{day}",
+    "review": "Xem hành động của ngày {day}",
+    "reviewTitle": "Kế hoạch của ngày",
+    "loading": "Đang tải kế hoạch của ngày…",
+    "loadFailed": "Không tải được kế hoạch của ngày này.",
+    "noActions": "Ngày này chưa có hành động nào.",
+    "minutes": "{count} phút",
+    "totalMinutes": "Tổng {minutes} phút",
+    "supplies": "Vật tư dùng trong ngày"
   },
   "metrics": {
     "label": "Chỉ số cảm biến",
@@ -62,7 +76,24 @@
     "tooltip": "{name}: {status} (mục tiêu {min}-{max})",
     "average": "TB: {value}",
     "period": "N1 → N{day}",
-    "noData": "Chưa có dữ liệu cảm biến"
+    "noData": "Chưa có dữ liệu cảm biến",
+    "offlineTitle": "Cảnh báo: {hub} đang ngắt kết nối ({time})",
+    "offlineHint": "Dữ liệu cảm biến thời gian thực tạm dừng đồng bộ. Hiển thị thông số lưu trữ gần nhất lúc {time}.",
+    "offlineHintNoData": "Dữ liệu cảm biến thời gian thực tạm dừng đồng bộ. Chưa có thông số lưu trữ để hiển thị.",
+    "offlineBadge": "Offline",
+    "alertBadge": "Cảnh báo",
+    "offlineValue": "--.-",
+    "offlineTooltip": "{name}: mất kết nối (ngưỡng {min}-{max})",
+    "lastValue": "Trước: {value}",
+    "storedAt": "Lưu {time}",
+    "noSignal": "Mất tín hiệu",
+    "noResponse": "Không phản hồi",
+    "signalUnknown": "chưa có tín hiệu",
+    "checkGateway": "Kiểm tra Gateway",
+    "checking": "Đang kiểm tra…",
+    "gatewayOk": "Hub phản hồi, heartbeat cách đây {sec} giây",
+    "gatewayFail": "Hub không phản hồi",
+    "configureIot": "Cấu hình kết nối IoT"
   },
   "projects": {
     "title": "Dự án đang thực thi",
@@ -78,11 +109,24 @@
     "snapshotHint": "Chụp ảnh để AI phân tích hình thái hoa",
     "timelapse": "Chế độ time-lapse",
     "fullscreen": "Phóng to",
-    "noCamera": "Chưa kết nối camera"
+    "noCamera": "Chưa kết nối camera",
+    "rtspLost": "MẤT LUỒNG RTSP",
+    "cameraLost": "Mất kết nối Camera {name}",
+    "reconnecting": "Đang thử tái kết nối qua giao thức RTSP (Thử lần {attempt}/{max})...",
+    "retry": "Thử kết nối lại",
+    "retrying": "Đang thử lại…",
+    "retryFailed": "Hub vẫn không phản hồi",
+    "snapshotStale": "Snapshot AI gần nhất ({time}):",
+    "verifyOnSite": "Hãy kiểm tra trực tiếp tại vườn."
   },
   "hardware": {
     "title": "Phần cứng IoT",
     "online": "{online}/{total} trực tuyến",
+    "offlineCount": "{online}/{total} phản hồi",
+    "disconnected": "Mất kết nối",
+    "noResponse": "Không phản hồi",
+    "manualMode": "Chế độ thủ công",
+    "configure": "Cấu hình kết nối IoT",
     "status": {
       "ok": "Bình thường",
       "warning": "Cần chú ý",
@@ -93,10 +137,15 @@
   "day": {
     "progress": "{day}/{total} ngày",
     "todayLabel": "Hôm nay",
+    "dayLabel": "Ngày {day}",
+    "backToToday": "Về hôm nay (N{day})",
     "goldenWindow": "Khung giờ vàng thụ phấn tốt nhất",
     "quickNote": "Ghi chép nhanh",
     "aiHint": "AI gợi ý:",
     "aiConfidence": "Độ chuẩn xác phân tích",
+    "iotWarningLabel": "Cảnh báo IoT:",
+    "iotWarning": "Đang mất kết nối cảm biến. Hệ thống duy trì chế độ an toàn cục bộ và chờ đồng bộ lại.",
+    "safeMode": "SAFE MODE",
     "noPlanTitle": "Chưa có kế hoạch cho ngày {day}",
     "noPlanHint": "Thêm nhiệm vụ cho ngày này để xem danh sách bước tại đây."
   },
@@ -118,7 +167,8 @@
     "completeTitle": "Hoàn thành nhiệm vụ ngày {day}/{total}",
     "completeProgress": "Đã xong {done}/{total} bước • {title}",
     "completeAction": "Đánh dấu hoàn thành ngày",
-    "dayCompleted": "Đã hoàn thành ngày {day}"
+    "dayCompleted": "Đã hoàn thành ngày {day}",
+    "completeBlocked": "Còn {count} hạng mục chưa hoàn thành"
   },
   "supplies": {
     "title": "Vật tư hôm nay",
@@ -137,7 +187,23 @@
     "profit": "Lợi nhuận ròng ước tính:",
     "spentTooltip": "Đã giải ngân: {spent} ({revenuePct}% doanh thu, {budgetPct}% ngân sách)",
     "reserveTooltip": "Dự phòng ngân sách còn lại: {amount}",
-    "currency": "{value} đ"
+    "currency": "{value} đ",
+    "log": "Sổ chi",
+    "addEntry": "Ghi chi",
+    "label": "Nội dung",
+    "labelPlaceholder": "Ví dụ: Mua phân hữu cơ",
+    "amount": "Số tiền",
+    "amountPlaceholder": "Số tiền (đồng)",
+    "kind": "Loại",
+    "cost": "Chi",
+    "income": "Thu",
+    "save": "Lưu",
+    "cancel": "Huỷ",
+    "noEntries": "Chưa ghi giao dịch nào.",
+    "removeEntry": "Xoá giao dịch: {label}",
+    "nextRun": "Tạo lượt tiếp theo từ dữ liệu này",
+    "cloning": "Đang tạo lượt mới…",
+    "error": "Không lưu được. Thử lại."
   },
   "rules": {
     "title": "Luật tự động",
@@ -145,6 +211,8 @@
     "on": "Đang kích hoạt",
     "off": "Đang tắt",
     "toggle": "Bật hoặc tắt luật: {name}",
+    "safeModeLabel": "Hệ thống tự ngắt an toàn:",
+    "safeModeOn": "Đang bật",
     "empty": "Chưa có luật tự động nào"
   },
   "lookahead": {
@@ -180,7 +248,174 @@
   },
   "empty": {
     "title": "Chưa có dự án nào",
-    "hint": "Tạo lộ trình đầu tiên để xem nhiệm vụ mỗi ngày và dữ liệu cảm biến tại đây."
+    "hint": "Tạo lộ trình đầu tiên để xem nhiệm vụ mỗi ngày và dữ liệu cảm biến tại đây.",
+    "create": "Tạo dự án mới với AI"
+  },
+  "newProject": {
+    "engine": "ACTLINE PLAN ARCHITECT · TOOL-CALLING BLUEPRINT",
+    "errors": {
+      "title": "Có lỗi xảy ra",
+      "generate": "Không dựng được kế hoạch.",
+      "draft": "Không lưu được bản nháp.",
+      "start": "Không tạo được dự án.",
+      "edit": "Không lưu được thay đổi của bạn.",
+      "reset": "Không xoá được bản phác thảo.",
+      "iot": "Không đổi được trạng thái IoT của dự án.",
+      "retry": "Thử lại",
+      "dismiss": "Bỏ qua lỗi này",
+      "reason": {
+        "unauthorized": "Phiên làm việc đã hết hạn — hãy tải lại trang.",
+        "not_found": "Không tìm thấy bản phác thảo — hãy dựng lại kế hoạch.",
+        "validation_failed": "Dữ liệu gửi lên không hợp lệ.",
+        "invalid_json": "Yêu cầu gửi lên bị lỗi.",
+        "conflict": "Dữ liệu xung đột với phiên hiện tại.",
+        "internal": "Máy chủ gặp lỗi. Vui lòng thử lại sau.",
+        "network": "Không kết nối được tới máy chủ. Kiểm tra mạng rồi thử lại.",
+        "unknown": "Đã xảy ra lỗi không mong muốn."
+      }
+    },
+    "headline": "Biến ý tưởng thành kế hoạch hành động thực tế",
+    "intro": "Chỉ cần nhập mục tiêu của bạn (trồng dưa ban công, tự chế robot Arduino, làm bánh mì sourdough, học vẽ tranh thủy mặc...). AI sẽ bóc tách lộ trình chi tiết từng ngày, danh mục vật tư cần mua trước và ngân sách dự kiến.",
+    "promptLabel": "Ý tưởng dự án",
+    "promptPlaceholder": "Ví dụ: Tôi muốn trồng 5 gốc dưa leo baby leo giàn ở ban công hướng Đông 3m², thu hoạch sau 45 ngày với ngân sách tiết kiệm nhất...",
+    "knowledge": "Bạn không cần biết trước phải làm gì — AI sẽ bóc tách lộ trình từ ý tưởng của bạn.",
+    "generate": "Khởi tạo kế hoạch hành động với AI",
+    "generating": "Đang phân tích ý tưởng…",
+    "stale": "Ý tưởng đã thay đổi — nhấn “Khởi tạo kế hoạch hành động với AI” để dựng lại bản phác thảo.",
+    "suggestionsLabel": "Hoặc thử các mẫu kế hoạch điển hình:",
+    "suggestions": {
+      "garden": "Trồng dưa lưới ban công",
+      "robot": "Chế tạo Robot dò đường Arduino",
+      "diorama": "Làm sa bàn Cyberpunk 1:35",
+      "aquarium": "Nuôi cá Guppy & thủy sinh",
+      "marathon": "Chạy marathon 21km sau 3 tháng"
+    },
+    "params": {
+      "duration": "Thời gian mục tiêu",
+      "dailyTime": "Thời gian rảnh mỗi ngày",
+      "budget": "Mức ngân sách tối đa",
+      "experience": "Mức độ kinh nghiệm",
+      "ai": "AI",
+      "manual": "Tay",
+      "aiTitle": "Để AI chọn thông số này",
+      "manualTitle": "Tự đặt thông số này",
+      "aiValue": "AI sẽ chọn"
+    },
+    "experienceOptions": {
+      "beginner": "Mới bắt đầu (Kèm hướng dẫn tỉ mỉ)",
+      "basic": "Đã có kinh nghiệm cơ bản",
+      "pro": "Thợ lành nghề / Pro Maker"
+    },
+    "blueprint": {
+      "title": "Bản phác thảo kế hoạch hành động đã tạo (Live Blueprint)",
+      "engineAi": "AI · {model}",
+      "engineTemplate": "Mẫu dựng sẵn",
+      "engineTemplateHint": "AI chưa phản hồi — đây là kế hoạch mẫu dựng sẵn, không phải do AI lập.",
+      "synced": "Đã đồng bộ AI",
+      "version": "Phiên bản: {version} · Tự động tinh chỉnh thích ứng",
+      "nameLabel": "Tên dự án AI đề xuất",
+      "durationTile": "Thời lượng lộ trình",
+      "days": "Ngày",
+      "nodeCount": "{count} Giai đoạn chính",
+      "budgetTile": "Dự toán ngân sách",
+      "saving": "Tiết kiệm {amount} so với dự trù",
+      "overBudget": "Vượt ngân sách dự trù {amount}",
+      "rhythm": "Nhịp độ:",
+      "hardware": {
+        "title": "Tích hợp phần cứng IoT dự kiến (Predicted Hardware Kit)",
+        "badge": "AI Đề xuất",
+        "hint": "Tự động kết nối với hub điều khiển và trạm cảm biến ngay khi kích hoạt dự án.",
+        "ready": "Sẵn sàng kết nối khi bắt đầu",
+        "off": "Chưa bật kết nối IoT",
+        "configure": "Cấu hình cảm biến",
+        "enable": "Kích hoạt IoT cho dự án này",
+        "suggested": "AI gợi ý bật IoT vì dự án cần theo dõi cảm biến môi trường.",
+        "notNeeded": "Dự án này không cần IoT. Bạn vẫn có thể bật sau trong màn hình dự án."
+      },
+      "nodes": {
+        "title": "Các Giai Đoạn Của Kế Hoạch (Plan Nodes)",
+        "hint": "Nhấp vào từng giai đoạn để xem các hành động bên trong",
+        "label": "Giai đoạn {n}",
+        "items": "{count} hành động",
+        "checkpoints": "{count} điểm kiểm tra",
+        "details": "Xem chi tiết",
+        "hide": "Ẩn chi tiết",
+        "locked": "Giai đoạn này mở khoá khi dự án chạy tới",
+        "add": "Thêm giai đoạn",
+        "delete": "Xoá giai đoạn này",
+        "nodeTitle": "Tên giai đoạn",
+        "nodeTitlePlaceholder": "Ví dụ: Hoàn thiện và kiểm tra",
+        "nodeObjective": "Mục tiêu của giai đoạn",
+        "nodeObjectivePlaceholder": "Kết quả đạt được sau khi xong giai đoạn",
+        "startDay": "Từ ngày",
+        "endDay": "Đến ngày"
+      },
+      "empty": {
+        "state": "Chưa có bản phác thảo",
+        "title": "Chưa có kế hoạch",
+        "hint": "Nhập ý tưởng của bạn ở ô phía trên rồi nhấn “Khởi tạo kế hoạch hành động với AI”. Kế hoạch sẽ được dựng mới hoàn toàn từ ý tưởng và các thông số bạn chọn."
+      },
+      "day": {
+        "title": "Kế hoạch theo ngày ({total} ngày)",
+        "list": "Danh sách ngày",
+        "total": "Tổng thời lượng: {minutes} phút",
+        "minutes": "{count}m",
+        "rationale": "LÝ DO KỸ THUẬT (RATIONALE):",
+        "upload": "Tải ảnh lên",
+        "noNode": "Chưa có giai đoạn cho ngày này",
+        "empty": "Ngày này chưa có hành động nào. Bạn có thể tự thêm việc cần làm.",
+        "add": "Thêm hành động",
+        "itemTitle": "Tên hành động",
+        "itemPlaceholder": "Ví dụ: Tưới nước xong, kiểm tra độ ẩm đất",
+        "itemMinutes": "Phút",
+        "itemSave": "Lưu",
+        "itemCancel": "Huỷ",
+        "needGenerate": "Nhấn “Khởi tạo kế hoạch hành động với AI” để dựng bản phác thảo rồi chỉnh sửa.",
+        "itemEdit": "Sửa hành động",
+        "itemDelete": "Xoá hành động"
+      },
+      "bom": {
+        "title": "Vật tư cần chuẩn bị trước",
+        "count": "{count} Mục BOM",
+        "hint": "AI đã lọc chính xác theo {area} để tránh dư thừa lãng phí",
+        "buyBy": "Mua trước N{day}",
+        "needBy": "Cần trước N{day}",
+        "base": "Dự toán vật tư cơ bản:",
+        "contingency": "Quỹ dự phòng sự cố & sâu bệnh:",
+        "total": "Tổng gói triển khai:",
+        "download": "Tải danh sách mua sắm",
+        "owned": "Đánh dấu đã có sẵn",
+        "ownedLabel": "Đánh dấu đã có sẵn: {name}",
+        "csv": {
+          "name": "Vật tư",
+          "spec": "Quy cách",
+          "price": "Giá (VNĐ)",
+          "buyBy": "Mua trước ngày"
+        },
+        "editPrice": "Sửa giá của {name}",
+        "savePrice": "Lưu giá",
+        "userPrice": "Giá do bạn nhập"
+      },
+      "risk": {
+        "title": "Dự báo rủi ro & Phương án dự phòng",
+        "badge": "Adaptive Engine",
+        "replanReady": "Cơ chế tự bù tiến độ: Sẵn sàng",
+        "replan": "Tự động Re-planning"
+      }
+    },
+    "actions": {
+      "ready": "Kế hoạch đã sẵn sàng để triển khai thực tế",
+      "readyDetail": "Bao gồm {days} ngày lộ trình, {supplies} hạng mục vật tư, và {checks} điểm chạm kiểm tra chất lượng.",
+      "pending": "Chưa có kế hoạch để bắt đầu",
+      "pendingDetail": "Dựng kế hoạch trước, rồi bạn có thể chỉnh sửa và bắt đầu dự án.",
+      "reset": "Bắt đầu lại",
+      "resetting": "Đang xoá…",
+      "saveDraft": "Lưu bản nháp",
+      "draftSaved": "Đã lưu bản nháp trên thiết bị này",
+      "refine": "Chỉnh sửa tinh chỉnh",
+      "start": "Bắt đầu dự án ngay hôm nay",
+      "starting": "Đang khởi tạo dự án…"
+    }
   },
   "hubSettings": {
     "title": "Cài đặt ESP32 Hub v2 & Thiết bị ngoại vi",
@@ -263,5 +498,26 @@
       "save": "Lưu cấu hình & Áp dụng",
       "saving": "Đang lưu…"
     }
+  },
+  "purchases": {
+    "title": "Danh sách mua sắm",
+    "count": "{count} món",
+    "empty": "Chưa có vật tư nào trong kế hoạch.",
+    "toggle": "Đánh dấu đã mua: {name}",
+    "remove": "Xoá khỏi danh sách: {name}",
+    "buyBy": "Mua trước N{day}",
+    "estimate": "Ước tính",
+    "actualPrice": "Giá thực tế của {name}",
+    "savePrice": "Lưu giá thực tế",
+    "summary": "Dự toán {estimated} đ · Đã chi {actual} đ",
+    "pending": "Còn {count} món",
+    "allBought": "Đã mua đủ",
+    "name": "Tên vật tư",
+    "namePlaceholder": "Ví dụ: Phân hữu cơ 5kg",
+    "price": "Giá ước tính",
+    "pricePlaceholder": "Giá (đồng)",
+    "add": "Thêm vật tư",
+    "cancel": "Huỷ",
+    "error": "Không lưu được. Thử lại."
   }
 }

@@ -53,7 +53,15 @@ export const getDayPlan = cache(async (projectId: string, day: number): Promise<
         .filter((p) => p.stepId === s.id)
         .map(({ id, url, filename, isProof }) => ({ id, url, filename, isProof })),
     })),
-    supplies: supplyRows.map(({ id, name, icon, quantity, available }) => ({ id, name, icon, quantity, available })),
+    supplies: supplyRows.map(({ id, name, icon, quantity, available, unitPriceVnd, buyByDay }) => ({
+      id,
+      name,
+      icon,
+      quantity,
+      available,
+      unitPriceVnd,
+      buyByDay,
+    })),
     aiHint: hint ? { body: hint.body, confidencePct: hint.confidencePct } : null,
   };
 });

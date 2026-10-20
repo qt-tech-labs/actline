@@ -29,7 +29,7 @@ export const getHardware = cache(async (projectId: string): Promise<HardwareDto>
       .filter((d) => d.kind !== "camera")
       .map(({ id, kind, name, status, displayValue }) => ({ id, kind, name, status, displayValue })),
     camera: cam?.meta
-      ? { id: cam.id, ...cam.meta, insight: insight?.body ?? null }
+      ? { id: cam.id, ...cam.meta, insight: insight?.body ?? null, insightAt: insight?.createdAt.toISOString() ?? null }
       : null,
   };
 });
