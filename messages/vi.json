@@ -27,6 +27,7 @@
     "help": "Trợ giúp",
     "settings": "Cài đặt & cấu hình",
     "account": "Tài khoản",
+    "addProject": "Tạo lộ trình mới",
     "mode": "Chế độ:",
     "modeName": "Tạo dự án mới với AI",
     "modeSwitch": "Đổi chế độ làm việc"
@@ -57,6 +58,7 @@
     "loading": "Đang tải kế hoạch của ngày…",
     "loadFailed": "Không tải được kế hoạch của ngày này.",
     "noActions": "Ngày này chưa có hành động nào.",
+    "phaseLabel": "{name} · {start}–{end}",
     "minutes": "{count} phút",
     "totalMinutes": "Tổng {minutes} phút",
     "supplies": "Vật tư dùng trong ngày"
@@ -94,13 +96,6 @@
     "gatewayOk": "Hub phản hồi, heartbeat cách đây {sec} giây",
     "gatewayFail": "Hub không phản hồi",
     "configureIot": "Cấu hình kết nối IoT"
-  },
-  "projects": {
-    "title": "Dự án đang thực thi",
-    "count": "Đang hoạt động: {count} mục tiêu",
-    "add": "Tạo lộ trình mới",
-    "empty": "Chưa có dự án nào",
-    "emptyHint": "Tạo lộ trình đầu tiên để bắt đầu theo dõi."
   },
   "camera": {
     "title": "Live Cam ban công",
@@ -201,6 +196,9 @@
     "cancel": "Huỷ",
     "noEntries": "Chưa ghi giao dịch nào.",
     "removeEntry": "Xoá giao dịch: {label}",
+    "removeConfirm": "Xác nhận",
+    "date": "Ngày",
+    "remaining": "Tồn kho còn lại",
     "nextRun": "Tạo lượt tiếp theo từ dữ liệu này",
     "cloning": "Đang tạo lượt mới…",
     "error": "Không lưu được. Thử lại."
@@ -519,5 +517,11 @@
     "add": "Thêm vật tư",
     "cancel": "Huỷ",
     "error": "Không lưu được. Thử lại."
+  },
+  "locale": {
+    "label": "Ngôn ngữ",
+    "vi": "Tiếng Việt",
+    "en": "English",
+    "switch": "Đổi ngôn ngữ"
   }
 }

@@ -6,6 +6,7 @@ import { ComingSoonButton } from "@/components/ui/ComingSoon";
 import { cn } from "@/lib/cn";
 import { getCurrentUser } from "@/server/auth";
 import { listProjects } from "@/server/services/projects";
+import { LocaleSwitcher } from "./LocaleSwitcher";
 import { ProjectSwitcher } from "./ProjectSwitcher";
 
 const NAV = [
@@ -21,12 +22,12 @@ export async function AppHeader({ projectId, mode = "default" }: { projectId: st
 
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between bg-surface/95 px-4 text-primary shadow-sm backdrop-blur-md md:px-space-xl">
-      <div className="flex items-center gap-space-lg">
+      <div className="flex items-center gap-2 sm:gap-space-lg">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg bg-primary-container font-display text-headline-md font-bold text-white shadow-sm">
             mA
           </span>
-          <span className="font-display text-headline-md font-bold tracking-tight">{t("brand")}</span>
+          <span className="hidden font-display text-headline-md font-bold tracking-tight sm:inline">{t("brand")}</span>
           <span aria-hidden="true" className="glow-ok size-2 rounded-full bg-ok" />
         </div>
         {mode === "create" ? (
@@ -40,9 +41,21 @@ export async function AppHeader({ projectId, mode = "default" }: { projectId: st
             <span className="text-title-sm font-semibold text-primary">{t("modeName")}</span>
             <Icon name="unfold_more" className="text-[16px] text-outline" />
           </Link>
-        ) : projectId ? (
-          <ProjectSwitcher projects={projects} activeId={projectId} />
-        ) : null}
+        ) : (
+          <div className="flex items-center gap-2">
+            {projectId ? <ProjectSwitcher projects={projects} activeId={projectId} /> : null}
+            {/* The switcher is the only way to reach the other projects, so the
+                way to start a new one belongs right next to it. */}
+            <Link
+              href="/new"
+              title={t("addProject")}
+              aria-label={t("addProject")}
+              className="flex size-8 items-center justify-center rounded-lg border border-outline-variant/30 bg-surface-container-low text-primary transition-colors hover:bg-primary-container hover:text-white sm:size-9"
+            >
+              <Icon name="add_circle" className="text-[18px] sm:text-[20px]" />
+            </Link>
+          </div>
+        )}
       </div>
 
       <nav aria-label={t("nav.label")} className="hidden h-full items-center gap-1 md:flex">
@@ -73,17 +86,18 @@ export async function AppHeader({ projectId, mode = "default" }: { projectId: st
         )}
       </nav>
 
-      <div className="flex items-center gap-1.5">
-        <ComingSoonButton label={t("notifications")} className="relative rounded-lg p-2 text-on-surface-variant">
+      <div className="flex items-center gap-1 sm:gap-1.5">
+        <LocaleSwitcher />
+        <ComingSoonButton label={t("notifications")} className="relative hidden rounded-lg p-2 text-on-surface-variant sm:block">
           <Icon name="notifications" />
         </ComingSoonButton>
         <ComingSoonButton label={t("help")} className="hidden rounded-lg p-2 text-on-surface-variant sm:block">
           <Icon name="help_outline" />
         </ComingSoonButton>
-        <ComingSoonButton label={t("settings")} className="rounded-lg p-2 text-on-surface-variant">
+        <ComingSoonButton label={t("settings")} className="hidden rounded-lg p-2 text-on-surface-variant sm:block">
           <Icon name="tune" />
         </ComingSoonButton>
-        <div className="ml-2 size-8 overflow-hidden rounded-full border border-outline-variant/40" title={t("account")}>
+        <div className="size-8 overflow-hidden rounded-full border border-outline-variant/40 sm:ml-2" title={t("account")}>
           {user.avatarUrl ? <Image src={user.avatarUrl} alt={user.name} width={32} height={32} className="size-full object-cover" /> : null}
         </div>
       </div>

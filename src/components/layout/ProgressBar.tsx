@@ -27,9 +27,12 @@ export async function ProgressBar({ projectId, selectedDay }: { projectId: strin
       <div className="mx-auto flex max-w-[1720px] flex-col gap-2">
         <div className="flex items-center justify-between gap-space-md">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-primary-fixed px-2.5 py-0.5 font-mono text-label-sm font-bold text-on-primary-fixed shadow-sm">
-              <Icon name="pace" className="text-[15px]" />
-              {t("summary", { day: overview.currentDay, total: overview.totalDays, pct: overview.progressPct })}
+            <span
+              title={t("summary", { day: overview.currentDay, total: overview.totalDays, pct: overview.progressPct })}
+              className="flex min-w-0 items-center gap-1.5 rounded-full bg-primary-fixed px-2.5 py-0.5 font-mono text-label-sm font-bold text-on-primary-fixed shadow-sm"
+            >
+              <Icon name="pace" className="shrink-0 text-[15px]" />
+              <span className="truncate">{t("summary", { day: overview.currentDay, total: overview.totalDays, pct: overview.progressPct })}</span>
             </span>
             {overview.stageName ? (
               <span className="hidden items-center gap-1 truncate text-caption text-on-surface-variant sm:inline-flex">
@@ -54,7 +57,7 @@ export async function ProgressBar({ projectId, selectedDay }: { projectId: strin
                     </span>
                   ) : null}
                   {hub.lastSeenAt ? (
-                    <span className="flex items-center gap-0.5">
+                    <span className="hidden items-center gap-0.5 sm:flex">
                       <Icon name="sync" className="text-[14px] text-secondary" />
                       <strong className="text-[11px] font-medium text-on-surface">
                         {t("synced", { time: format.relativeTime(new Date(hub.lastSeenAt)) })}
@@ -100,7 +103,7 @@ export async function ProgressBar({ projectId, selectedDay }: { projectId: strin
           )}
         </div>
 
-        <MilestoneTimeline projectId={projectId} nodes={timeline.nodes} progressPct={timeline.progressPct} selectedDay={day} />
+        <MilestoneTimeline projectId={projectId} nodes={timeline.nodes} phases={timeline.phases} progressPct={timeline.progressPct} selectedDay={day} />
       </div>
     </section>
   );

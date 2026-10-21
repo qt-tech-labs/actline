@@ -37,7 +37,7 @@ export function ProjectSwitcher({ projects, activeId }: { projects: ProjectSumma
         className="group flex items-center gap-2 rounded-lg border border-outline-variant/30 bg-surface-container-low px-3 py-1.5 text-on-surface transition-colors hover:bg-surface-container"
       >
         <Icon name={active?.icon ?? "psychiatry"} className="text-[17px] text-primary" />
-        <span className="max-w-[10rem] truncate text-[13px] font-semibold text-primary">{active?.name}</span>
+        <span className="max-w-[4rem] truncate text-[13px] font-semibold text-primary sm:max-w-[10rem]">{active?.name}</span>
         <Icon name="expand_more" className="text-[16px] text-outline transition-colors group-hover:text-primary" />
       </button>
       {open ? (

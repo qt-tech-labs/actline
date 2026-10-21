@@ -2,6 +2,7 @@ import "server-only";
 
 import { desc, eq } from "drizzle-orm";
 import { cache } from "react";
+import { dateOfProjectDay } from "@/lib/day";
 import type { ExpenseDto, FinanceDto } from "@/lib/types";
 import { db } from "../db";
 import { expenses } from "../db/schema";
@@ -31,6 +32,7 @@ export const getFinance = cache(async (userId: string, projectId: string): Promi
   const list: ExpenseDto[] = rows.map((row) => ({
     id: row.id,
     day: row.day,
+    date: dateOfProjectDay(project.startDate, row.day),
     label: row.label,
     amountVnd: row.amountVnd,
     kind: row.kind,

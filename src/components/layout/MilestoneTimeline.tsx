@@ -6,11 +6,16 @@ import { useEffect, useRef } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { dayMonthLabel } from "@/lib/day";
-import type { TimelineNode } from "@/lib/types";
+import { phaseColor } from "@/lib/phases";
+import type { TimelineNode, TimelinePhase } from "@/lib/types";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 /** Height of the band the markers sit in; the track line is centred on it. */
 const MARKER_BAND = "h-10";
+/** Height of the coloured phase header; the track sits below it. */
+const PHASE_HEAD = "h-[22px]";
+/** Where the track starts before it is measured against the marker band. */
+const TRACK_OFFSET = 46;
 
 function NodeView({
   node,
@@ -103,27 +108,103 @@ function NodeView({
   );
 }
 
+/** The nodes of one phase, in day order. Nodes outside every phase keep their own group. */
+type Section = { phase: TimelinePhase | null; color: string | null; nodes: TimelineNode[]; span: number };
+
+function groupByPhase(nodes: TimelineNode[], phases: TimelinePhase[]): Section[] {
+  const sections: Section[] = [];
+  for (const node of nodes) {
+    const index = phases.findIndex((p) => node.day >= p.startDay && node.day <= p.endDay);
+    const phase = index >= 0 ? (phases[index] ?? null) : null;
+    const color = index >= 0 ? phaseColor(index) : null;
+    const last = sections[sections.length - 1];
+    if (last && last.phase?.id === phase?.id) {
+      last.nodes.push(node);
+    } else {
+      sections.push({ phase, color, nodes: [node], span: 0 });
+    }
+  }
+  // A section grows with the number of days it covers, so the ribbon keeps the
+  // shape of the plan: a long phase gets a long piece of the track.
+  for (const section of sections) {
+    const first = section.nodes[0];
+    const last = section.nodes[section.nodes.length - 1];
+    section.span = section.phase
+      ? section.phase.endDay - section.phase.startDay + 1
+      : first && last
+        ? last.day - first.day + 1
+        : 1;
+  }
+  return sections;
+}
+
 export function MilestoneTimeline({
   projectId,
   nodes,
+  phases,
   progressPct,
   selectedDay,
 }: {
   projectId: string;
   nodes: TimelineNode[];
+  phases: TimelinePhase[];
   progressPct: number;
   /** The day the main view is showing. */
   selectedDay: number;
 }) {
   const t = useTranslations("timeline");
   const scroller = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const fill = useRef<HTMLDivElement>(null);
+  const sections = groupByPhase(nodes, phases);
 
-  // Centre the "today" node on first paint (scrollLeft only: never scrolls the page).
+  // Centre the "today" node on first paint (scrollLeft only: never scrolls the page)
+  // and let the solid track end where today is. The icon font and the text fonts
+  // land after the first paint and change the widths, so both are redone while
+  // the content still resizes.
   useEffect(() => {
     const box = scroller.current;
-    const today = box?.querySelector<HTMLElement>("[data-today]");
-    if (!box || !today) return;
-    box.scrollLeft = today.offsetLeft - box.clientWidth / 2 + today.offsetWidth / 2;
+    if (!box) return;
+    let cancelled = false;
+    let observer: ResizeObserver | null = null;
+    const sync = () => {
+      const today = box.querySelector<HTMLElement>("[data-today]");
+      if (!today || cancelled) return;
+      // The sections are sized by their content, so their widths are what change
+      // when the fonts land: watch them, not just the scroller.
+      content.current?.querySelectorAll("ol > li").forEach((el) => observer?.observe(el));
+      // 1. centre today in the scroller
+      const boxRect = box.getBoundingClientRect();
+      const todayRect = today.getBoundingClientRect();
+      box.scrollLeft += todayRect.left - boxRect.left - (box.clientWidth - todayRect.width) / 2;
+      // 2. the solid track stops at today. The nodes are grouped by phase, so the
+      // share of finished days is not the share of the track. Both rects are read
+      // after the scroll, so they belong to the same frame.
+      const track = box.querySelector<HTMLElement>("[data-track]");
+      if (track && fill.current) {
+        const trackRect = track.getBoundingClientRect();
+        const after = today.getBoundingClientRect();
+        const ratio = (after.left + after.width / 2 - trackRect.left) / trackRect.width;
+        fill.current.style.width = `${Math.min(Math.max(ratio, 0), 1) * 100}%`;
+        // The line runs through the middle of the markers: its height is read
+        // from the band, so the header and the padding can change freely.
+        const band = today.querySelector<HTMLElement>("a");
+        if (band && content.current) {
+          const contentRect = content.current.getBoundingClientRect();
+          const bandRect = band.getBoundingClientRect();
+          track.style.top = `${bandRect.top - contentRect.top + bandRect.height / 2}px`;
+        }
+      }
+    };
+    observer = new ResizeObserver(() => sync());
+    sync();
+    observer.observe(box);
+    if (content.current) observer.observe(content.current);
+    void document.fonts?.ready.then(() => sync());
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
   }, []);
 
   const scrollBy = (dir: -1 | 1) => {
@@ -142,14 +223,49 @@ export function MilestoneTimeline({
       </button>
       <div ref={scroller} className="scrollbar-none relative flex-1 overflow-x-auto py-2" role="region" aria-label={t("label")} tabIndex={0}>
         {/* The track is centred on the marker band, so it runs through the circles. */}
-        <div className="relative min-w-[1120px] px-4">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-6 top-5 z-0 flex h-1 -translate-y-1/2">
-            <div className="h-full rounded-l-full bg-primary" style={{ width: `${progressPct}%` }} />
+        <div ref={content} className="relative min-w-[1120px] px-4">
+          <div
+            aria-hidden="true"
+            data-track
+            className="pointer-events-none absolute inset-x-6 z-0 flex h-1 -translate-y-1/2"
+            style={{ top: TRACK_OFFSET }}
+          >
+            <div ref={fill} className="h-full rounded-l-full bg-primary" style={{ width: `${progressPct}%` }} />
             <div className="mt-px h-full flex-1 border-t-2 border-dashed border-outline-variant/70" />
           </div>
-          <ol className="relative flex items-start justify-between">
-            {nodes.map((n) => (
-              <NodeView key={n.day} node={n} projectId={projectId} selected={n.day === selectedDay} />
+          <ol className="relative flex items-start">
+            {sections.map((section, index) => (
+              <li
+                key={section.phase?.id ?? `loose-${index}`}
+                className="flex flex-col"
+                style={{ flexGrow: section.span, flexBasis: 0 }}
+              >
+                {section.phase ? (
+                  <span
+                    title={t("phaseLabel", {
+                      name: section.phase.name,
+                      start: t("dayLabel", { day: pad(section.phase.startDay) }),
+                      end: t("dayLabel", { day: pad(section.phase.endDay) }),
+                    })}
+                    className={cn("flex items-center justify-center gap-1.5 px-2", PHASE_HEAD)}
+                    style={{ backgroundColor: section.color ?? undefined }}
+                  >
+                    <span className="min-w-0 max-w-full truncate text-center font-mono text-[10px] font-bold uppercase tracking-wide text-white">
+                      {section.phase.name}
+                    </span>
+                  </span>
+                ) : (
+                  <span aria-hidden="true" className={cn("block", PHASE_HEAD)} />
+                )}
+                <ul
+                  className="flex items-start justify-between gap-3 px-2 pt-1 pb-2"
+                  style={{ backgroundColor: section.color ? `${section.color}14` : undefined }}
+                >
+                  {section.nodes.map((n) => (
+                    <NodeView key={n.day} node={n} projectId={projectId} selected={n.day === selectedDay} />
+                  ))}
+                </ul>
+              </li>
             ))}
           </ol>
         </div>

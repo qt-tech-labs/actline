@@ -38,10 +38,20 @@ export type TimelineNode = {
   date: string;
 };
 
+/** One phase of the plan: a stretch of days the timeline groups its nodes into. */
+export type TimelinePhase = {
+  id: string;
+  name: string;
+  startDay: number;
+  endDay: number;
+};
+
 export type Timeline = {
   nodes: TimelineNode[];
   /** 0-100: how far the solid progress track extends. */
   progressPct: number;
+  /** The phases of the plan, in day order. */
+  phases: TimelinePhase[];
 };
 
 export type MetricCard = {
@@ -120,6 +130,8 @@ export type PurchaseLog = {
 export type ExpenseDto = {
   id: string;
   day: number;
+  /** Calendar date of that project day (yyyy-mm-dd). */
+  date: string;
   label: string;
   amountVnd: number;
   kind: "cost" | "income";

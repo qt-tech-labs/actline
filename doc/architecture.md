@@ -8,7 +8,7 @@
 | Language | TypeScript (strict, `noUncheckedIndexedAccess`) |
 | Styling | Tailwind CSS v4, design tokens in `@theme` (`src/app/globals.css`) |
 | Fonts | `next/font/google` (Manrope, Space Grotesk, JetBrains Mono); Material Symbols as a Google Fonts **subset** |
-| i18n | `next-intl`, cookie-based locale (no URL prefix), `messages/vi.json` |
+| i18n | `next-intl`, cookie-based locale (no URL prefix), `messages/vi.json` + `messages/en.json` |
 | Database | PostgreSQL 17 (Docker Compose), Drizzle ORM + `postgres` driver, SQL migrations in `drizzle/` |
 | Validation | Zod |
 | API | Versioned REST route handlers under `/api/v1` |
@@ -65,7 +65,8 @@ so the state can be seen by switching project.
 ```
 design/                    reference HTML designs (not part of the build)
 doc/                       requirement.md, architecture.md
-messages/vi.json           all UI strings
+messages/vi.json           all UI strings (Vietnamese)
+messages/en.json           all UI strings (English)
 drizzle/                   generated SQL migrations
 src/
   app/
@@ -81,10 +82,10 @@ src/
     metrics/               MetricsGrid, Sparkline (server-rendered SVG)
     new/                   NewProjectProvider*, IdeaGenerator*, BlueprintPreview, BlueprintSummary,
                             HardwareKit, IotSwitch*, NodeGrid*, DayBrowser*, BomSupplies*, RiskForecast, ActionBar*
-    sidebar/               ProjectList, LiveCamCard, LiveClock*, HardwareCard, CameraOfflineOverlay*
+    sidebar/               LiveCamCard, LiveClock*, HardwareCard, CameraOfflineOverlay*
     today/                 TodaySection, StepsPanel*, QuickNoteButton*, IncidentFab*
     right/                 SuppliesCard, FinanceCard, RulesCard, RuleList*, LookaheadCard
-    ui/                    Icon, Card, Dialog*, TextReportDialog*, Skeleton, ComingSoon
+    ui/                    Icon, Card, Dialog*, TextReportDialog*, Skeleton, ComingSoon, ConfirmDeleteButton*
   i18n/                    config.ts (locales), request.ts (cookie -> locale + messages)
   lib/                     types, hub-config (HubConfig type, Zod settings schema, URL masking), day math,
                             formatting, sparkline paths, api-client, icons list, blueprint (defaults, knobs,

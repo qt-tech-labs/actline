@@ -42,6 +42,6 @@ Layering: `src/app/api/v1/**` route handlers and Server Components both call `sr
 ## Conventions
 
 - Data: UUID primary keys; money is integer VND; the current project day is derived from `projects.start_date` (never stored); sensor ok/low/high status is derived from `sensor_targets` at read time.
-- i18n: cookie-based locale (`NEXT_LOCALE`, default `vi`), no URL prefix. All UI strings live in `messages/vi.json`; no literals in components (`getTranslations` on the server, `useTranslations` on the client). `NextIntlClientProvider` in `layout.tsx` only receives the namespaces client components use, so add any new client namespace there.
+- i18n: cookie-based locale (`NEXT_LOCALE`, default `vi`), no URL prefix. All UI strings live in `messages/vi.json` and `messages/en.json`; no literals in components (`getTranslations` on the server, `useTranslations` on the client). `NextIntlClientProvider` in `layout.tsx` only receives the namespaces client components use, so add any new client namespace there. The header's `LocaleSwitcher` writes the cookie and calls `router.refresh()`.
 - Icons: Material Symbols loaded as a Google Fonts subset via `icon_names=`. A new icon (including names stored in the DB) must be added to `src/lib/icons.ts`.
 - Sparklines are server-rendered SVG (`lib/sparkline.ts`); the only per-second client work is `LiveClock`.

@@ -12,7 +12,7 @@ import { projects } from "../db/schema";
 type ProjectRow = typeof projects.$inferSelect;
 
 /** The timezone of the device the user browses from; the project timezone by default. */
-async function viewerTimezone(): Promise<string> {
+export async function viewerTimezone(): Promise<string> {
   const store = await cookies();
   return store.get(TZ_COOKIE)?.value || PROJECT_TZ;
 }

@@ -112,9 +112,10 @@ holds **items** (one action item, pinned to a day). A day with no item is a vali
 
 ## Conventions
 
-- i18n: every string lives in `messages/vi.json`; no literals in components. A new **client**
-  namespace must be added to `CLIENT_NAMESPACES` in `src/app/layout.tsx`, or the client component
-  gets no messages.
+- i18n: every string lives in `messages/vi.json` (and `messages/en.json`); no literals in
+  components. A new **client** namespace must be added to `CLIENT_NAMESPACES` in
+  `src/app/layout.tsx`, or the client component gets no messages. The locale is a cookie
+  (`NEXT_LOCALE`); the header's `LocaleSwitcher` sets it and refreshes the route.
 - Icons: Material Symbols loaded as a subset via `icon_names=`. A new icon name — including one
   stored in the DB or produced by the AI — must be added to `src/lib/icons.ts`, or it renders nothing.
 - Data: UUID primary keys, money as integer VND, the current project day is derived (never stored),

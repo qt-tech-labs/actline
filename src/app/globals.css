@@ -162,6 +162,24 @@
   transition-timing-function: var(--ease-out-strong);
 }
 
+/**
+ * A block that folds away: the row height goes from 0 to its content while
+ * the content fades. Grid rows are the only way to animate an unknown
+ * height without measuring it in JS.
+ */
+@utility fold {
+  transition-property: grid-template-rows, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: var(--ease-out-strong);
+}
+
+/** Two states of the same thing swapping: crossfade with a small scale. */
+@utility morph {
+  transition-property: opacity, scale;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out-strong);
+}
+
 /* Switching days in the milestone track: the new day slides in from the side
    the user came from. Transform + opacity only, 200ms, strong ease-out. */
 @keyframes day-plan-in-forward {
@@ -177,6 +195,51 @@
 
 @utility glow-ok {
   box-shadow: 0 0 6px rgba(27, 138, 90, 0.5);
+}
+
+/**
+ * The native <dialog> animates in and out on its own: transform + opacity
+ * only, `allow-discrete` keeps the panel and its backdrop on screen while
+ * they fade. The panel is centred, so it scales from its own centre.
+ */
+.dialog-panel {
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transition:
+    opacity 200ms var(--ease-out-strong),
+    transform 200ms var(--ease-out-strong),
+    overlay 200ms var(--ease-out-strong) allow-discrete,
+    display 200ms var(--ease-out-strong) allow-discrete;
+}
+.dialog-panel[open] {
+  opacity: 1;
+  transform: none;
+}
+.dialog-panel:not([open]) {
+  /* Leaving is the user's own decision: it answers faster than it arrives. */
+  transition-duration: 150ms;
+  pointer-events: none;
+}
+@starting-style {
+  .dialog-panel[open] {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+.dialog-panel::backdrop {
+  opacity: 0;
+  transition:
+    opacity 200ms var(--ease-out-strong),
+    overlay 200ms var(--ease-out-strong) allow-discrete,
+    display 200ms var(--ease-out-strong) allow-discrete;
+}
+.dialog-panel[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .dialog-panel[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 .material-symbols-outlined {
@@ -203,5 +266,16 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  /* Less movement, not no motion: the fade that explains the change stays. */
+  .fold {
+    transition-property: opacity !important;
+    transition-duration: 150ms !important;
+  }
+  .dialog-panel,
+  .dialog-panel::backdrop {
+    transform: none !important;
+    transition-property: opacity, overlay, display !important;
+    transition-duration: 150ms !important;
   }
 }

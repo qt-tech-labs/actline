@@ -2,9 +2,11 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
+import { dayMonthLabel } from "@/lib/day";
 import { compactVnd } from "@/lib/format";
 import { useSectionData } from "@/lib/use-section-data";
 import type { FinanceDto } from "@/lib/types";
@@ -21,9 +23,19 @@ export function FinancePanel({ projectId, initial }: { projectId: string; initia
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cloning, setCloning] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // The card owns its ledger: it refetches its own endpoint instead of
   // re-rendering the whole page.
   const { data: finance, refetch } = useSectionData<FinanceDto>(initial, `/api/v1/projects/${projectId}/expenses`);
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const vnd = (n: number) => t("currency", { value: format.number(n) });
   const pct = (n: number, d: number) => (d > 0 ? (n / d) * 100 : 0);
@@ -72,10 +84,30 @@ export function FinancePanel({ projectId, initial }: { projectId: string; initia
   const remove = async (id: string) => {
     try {
       await call(`/expenses/${id}`, "DELETE");
+      setConfirmDeleteId(null);
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current);
+        deleteTimeoutRef.current = null;
+      }
       void refetch();
     } catch {
       /* handled */
     }
+  };
+
+  const requestRemove = (id: string) => {
+    if (confirmDeleteId === id) {
+      void remove(id);
+      return;
+    }
+    setConfirmDeleteId(id);
+    if (deleteTimeoutRef.current) {
+      clearTimeout(deleteTimeoutRef.current);
+    }
+    deleteTimeoutRef.current = setTimeout(() => {
+      setConfirmDeleteId(null);
+      deleteTimeoutRef.current = null;
+    }, 3000);
   };
 
   const clone = async () => {
@@ -144,6 +176,8 @@ export function FinancePanel({ projectId, initial }: { projectId: string; initia
           <button
             type="button"
             onClick={() => setAdding((value) => !value)}
+            aria-expanded={adding}
+            aria-controls="finance-add-form"
             className="flex items-center gap-1 rounded-md border border-surface-variant bg-surface-container-low px-2 py-1 text-[11px] font-medium text-on-surface transition-colors hover:bg-surface-container"
           >
             <Icon name="add_circle" className="text-[14px] text-primary" />
@@ -151,53 +185,65 @@ export function FinancePanel({ projectId, initial }: { projectId: string; initia
           </button>
         </div>
 
-        {adding ? (
-          <div className="flex flex-col gap-1.5 rounded-lg border border-surface-variant bg-surface-container-low p-2">
-            <input
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-              placeholder={t("labelPlaceholder")}
-              aria-label={t("label")}
-              className="rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 text-body-sm text-on-surface focus:border-primary"
-            />
-            <div className="flex gap-1.5">
+        <div
+          id="finance-add-form"
+          inert={!adding}
+          className={cn(
+            "fold grid",
+            adding ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+          )}
+        >
+          <div className="overflow-hidden">
+            <div className="flex flex-col gap-1.5 rounded-lg border border-surface-variant bg-surface-container-low p-2">
               <input
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-                inputMode="numeric"
-                placeholder={t("amountPlaceholder")}
-                aria-label={t("amount")}
-                className="w-28 rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 font-mono text-body-sm text-on-surface focus:border-primary"
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
+                placeholder={t("labelPlaceholder")}
+                aria-label={t("label")}
+                className="rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 text-body-sm text-on-surface focus:border-primary"
               />
-              <select
-                value={kind}
-                onChange={(event) => setKind(event.target.value as "cost" | "income")}
-                aria-label={t("kind")}
-                className="rounded-lg border border-surface-variant bg-surface px-2 py-1.5 text-body-sm text-on-surface focus:border-primary"
-              >
-                <option value="cost">{t("cost")}</option>
-                <option value="income">{t("income")}</option>
-              </select>
-            </div>
-            <div className="flex gap-1.5">
-              <button
-                type="button"
-                onClick={() => void add()}
-                disabled={busy || !label.trim() || !amount}
-                className="rounded-lg bg-primary px-3 py-1.5 text-body-sm font-medium text-on-primary disabled:opacity-60"
-              >
-                {t("save")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdding(false)}
-                className="rounded-lg border border-surface-variant px-3 py-1.5 text-body-sm text-on-surface"
-              >
-                {t("cancel")}
-              </button>
+              <div className="flex gap-1.5">
+                <input
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  inputMode="numeric"
+                  placeholder={t("amountPlaceholder")}
+                  aria-label={t("amount")}
+                  className="w-28 rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 font-mono text-body-sm text-on-surface focus:border-primary"
+                />
+                <select
+                  value={kind}
+                  onChange={(event) => setKind(event.target.value as "cost" | "income")}
+                  aria-label={t("kind")}
+                  className="rounded-lg border border-surface-variant bg-surface px-2 py-1.5 text-body-sm text-on-surface focus:border-primary"
+                >
+                  <option value="cost">{t("cost")}</option>
+                  <option value="income">{t("income")}</option>
+                </select>
+              </div>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => void add()}
+                  disabled={busy || !label.trim() || !amount}
+                  className="rounded-lg bg-primary px-3 py-1.5 text-body-sm font-medium text-on-primary disabled:opacity-60"
+                >
+                  {t("save")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdding(false);
+                    setError(null);
+                  }}
+                  className="rounded-lg border border-surface-variant px-3 py-1.5 text-body-sm text-on-surface"
+                >
+                  {t("cancel")}
+                </button>
+              </div>
             </div>
           </div>
-        ) : null}
+        </div>
 
         {entries.length === 0 ? (
           <p className="text-[11px] text-outline">{t("noEntries")}</p>
@@ -208,23 +254,21 @@ export function FinancePanel({ projectId, initial }: { projectId: string; initia
                 <span className="flex min-w-0 items-center gap-1.5">
                   <Icon name={entry.kind === "income" ? "trending_up" : "payments"} className={cn("text-[13px]", entry.kind === "income" ? "text-ok" : "text-outline")} />
                   <span className="truncate text-on-surface-variant">{entry.label}</span>
-                  <span className="shrink-0 font-mono text-[10px] text-outline">N{String(entry.day).padStart(2, "0")}</span>
+                  <span className="shrink-0 font-mono text-[10px] text-outline">
+                    N{String(entry.day).padStart(2, "0")} · {dayMonthLabel(entry.date)}
+                  </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-1">
                   <span className={cn("font-mono font-bold", entry.kind === "income" ? "text-ok" : "text-on-surface")}>
                     {entry.kind === "income" ? "+" : "-"}
                     {format.number(entry.amountVnd)}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => void remove(entry.id)}
+                  <ConfirmDeleteButton
+                    confirming={confirmDeleteId === entry.id}
+                    onConfirm={() => requestRemove(entry.id)}
+                    label={t("removeEntry", { label: entry.label })}
                     disabled={busy}
-                    aria-label={t("removeEntry", { label: entry.label })}
-                    title={t("removeEntry", { label: entry.label })}
-                    className="flex size-5 items-center justify-center rounded text-outline transition-colors hover:text-error disabled:opacity-50"
-                  >
-                    <Icon name="delete" className="text-[13px]" />
-                  </button>
+                  />
                 </span>
               </li>
             ))}

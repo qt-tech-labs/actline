@@ -1,10 +1,12 @@
 import "server-only";
 
 import { and, eq } from "drizzle-orm";
+import { currentProjectDay } from "@/lib/day";
 import { statusFromItems } from "@/lib/steps";
 import { ConflictError, NotFoundError } from "../auth";
 import { db } from "../db";
 import { automationRules, dayPlans, expenses, hubs, incidents, notes, projects, stepItems, steps, supplies } from "../db/schema";
+import { getProjectRow, viewerTimezone } from "./projects";
 /** Ownership-checked lookups: every mutation resolves back to a project owned by `userId`. */
 async function ownedStep(userId: string, stepId: string) {
   const [row] = await db
@@ -251,12 +253,14 @@ export async function addExpense(
   projectId: string,
   input: { label: string; amountVnd: number; kind?: "cost" | "income"; day?: number },
 ) {
-  await assertProject(userId, projectId);
+  const [project, tz] = await Promise.all([getProjectRow(userId, projectId), viewerTimezone()]);
+  // A hand-written entry belongs to the day the user is on, not to day 1.
+  const day = input.day ?? currentProjectDay(project.startDate, project.totalDays, new Date(), tz);
   const [expense] = await db
     .insert(expenses)
     .values({
       projectId,
-      day: input.day ?? 1,
+      day,
       label: input.label,
       amountVnd: input.amountVnd,
       kind: input.kind ?? "cost",

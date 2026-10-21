@@ -1,7 +1,8 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { compactVnd } from "@/lib/format";
@@ -22,8 +23,18 @@ export function PurchaseList({ projectId, initial }: { projectId: string; initia
   const [actual, setActual] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // The row changes straight away; the server confirms right after.
   const [optimistic, setOptimistic] = useState<{ id: string; bought?: boolean; actualPriceVnd?: number | null } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const call = async (path: string, method: "POST" | "PATCH" | "DELETE", body?: unknown) => {
     setBusy(true);
@@ -88,10 +99,30 @@ export function PurchaseList({ projectId, initial }: { projectId: string; initia
   const remove = async (id: string) => {
     try {
       await call(`/supplies/${id}`, "DELETE");
+      setConfirmDeleteId(null);
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current);
+        deleteTimeoutRef.current = null;
+      }
       void refetch();
     } catch {
       /* handled */
     }
+  };
+
+  const requestRemove = (id: string) => {
+    if (confirmDeleteId === id) {
+      void remove(id);
+      return;
+    }
+    setConfirmDeleteId(id);
+    if (deleteTimeoutRef.current) {
+      clearTimeout(deleteTimeoutRef.current);
+    }
+    deleteTimeoutRef.current = setTimeout(() => {
+      setConfirmDeleteId(null);
+      deleteTimeoutRef.current = null;
+    }, 3000);
   };
 
   const boughtOf = (id: string, serverValue: boolean) => (optimistic?.id === id && optimistic.bought !== undefined ? optimistic.bought : serverValue);
@@ -131,6 +162,7 @@ export function PurchaseList({ projectId, initial }: { projectId: string; initia
                     <span className="block font-mono text-[11px] text-outline">
                       {t("buyBy", { day: item.buyByDay ?? 1 })}
                       {item.estimatedPriceVnd ? ` · ${compactVnd(item.estimatedPriceVnd)}` : ""}
+                      {item.quantity ? ` · ${item.quantity}` : ""}
                     </span>
                   </div>
                 </div>
@@ -169,16 +201,13 @@ export function PurchaseList({ projectId, initial }: { projectId: string; initia
                       <Icon name="check" className="text-[13px]" />
                     </button>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => void remove(item.id)}
+                  <ConfirmDeleteButton
+                    confirming={confirmDeleteId === item.id}
+                    onConfirm={() => requestRemove(item.id)}
+                    label={t("remove", { name: item.name })}
+                    size="md"
                     disabled={busy}
-                    aria-label={t("remove", { name: item.name })}
-                    title={t("remove", { name: item.name })}
-                    className="flex size-6 items-center justify-center rounded text-outline transition-colors hover:text-error disabled:opacity-50"
-                  >
-                    <Icon name="delete" className="text-[15px]" />
-                  </button>
+                  />
                 </div>
               </li>
             );
@@ -191,51 +220,73 @@ export function PurchaseList({ projectId, initial }: { projectId: string; initia
         {log.pendingCount > 0 ? <span className="font-bold text-secondary">{t("pending", { count: log.pendingCount })}</span> : <span className="font-bold text-ok">{t("allBought")}</span>}
       </div>
 
-      {adding ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-surface-variant bg-surface-container-low p-2">
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder={t("namePlaceholder")}
-            aria-label={t("name")}
-            className="rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 text-body-sm text-on-surface focus:border-primary"
-          />
-          <input
-            value={price}
-            onChange={(event) => setPrice(event.target.value)}
-            inputMode="numeric"
-            placeholder={t("pricePlaceholder")}
-            aria-label={t("price")}
-            className="rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 font-mono text-body-sm text-on-surface focus:border-primary"
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => void add()}
-              disabled={busy || !name.trim()}
-              className="rounded-lg bg-primary px-3 py-1.5 text-body-sm font-medium text-on-primary disabled:opacity-60"
-            >
-              {t("add")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setAdding(false)}
-              className="rounded-lg border border-surface-variant px-3 py-1.5 text-body-sm text-on-surface"
-            >
-              {t("cancel")}
-            </button>
+      <div
+        inert={!adding}
+        className={cn(
+          "fold grid",
+          adding ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-2 rounded-lg border border-surface-variant bg-surface-container-low p-2">
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder={t("namePlaceholder")}
+              aria-label={t("name")}
+              className="rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 text-body-sm text-on-surface focus:border-primary"
+            />
+            <input
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
+              inputMode="numeric"
+              placeholder={t("pricePlaceholder")}
+              aria-label={t("price")}
+              className="rounded-lg border border-surface-variant bg-surface px-2.5 py-1.5 font-mono text-body-sm text-on-surface focus:border-primary"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => void add()}
+                disabled={busy || !name.trim()}
+                className="rounded-lg bg-primary px-3 py-1.5 text-body-sm font-medium text-on-primary disabled:opacity-60"
+              >
+                {t("add")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAdding(false);
+                  setError(null);
+                }}
+                className="rounded-lg border border-surface-variant px-3 py-1.5 text-body-sm text-on-surface"
+              >
+                {t("cancel")}
+              </button>
+            </div>
           </div>
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setAdding(true)}
-          className="flex items-center justify-center gap-1.5 rounded-lg border border-surface-variant bg-surface-container-low px-3 py-2 text-body-sm font-medium text-on-surface transition-colors hover:bg-surface-container"
-        >
-          <Icon name="add_circle" className="text-[16px] text-primary" />
-          {t("add")}
-        </button>
-      )}
+      </div>
+
+      <div
+        inert={adding}
+        className={cn(
+          "fold grid",
+          adding ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
+        )}
+      >
+        <div className="overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            aria-expanded={adding}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-surface-variant bg-surface-container-low px-3 py-2 text-body-sm font-medium text-on-surface transition-colors hover:bg-surface-container"
+          >
+            <Icon name="add_circle" className="text-[16px] text-primary" />
+            {t("add")}
+          </button>
+        </div>
+      </div>
 
       {error ? <p role="alert" className="text-body-sm text-error">{error}</p> : null}
     </div>

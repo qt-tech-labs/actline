@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = { themeColor: "#faf9f6", width: "device-width", initialScale: 1 };
 
 // Only ship the namespaces that client components actually read.
-const CLIENT_NAMESPACES = ["timeline", "steps", "rules", "camera", "dialogs", "switcher", "common", "hubSettings", "progress", "metrics", "newProject", "purchases", "finance"] as const;
+const CLIENT_NAMESPACES = ["timeline", "steps", "rules", "camera", "dialogs", "switcher", "common", "hubSettings", "progress", "metrics", "newProject", "purchases", "finance", "locale"] as const;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [locale, messages] = await Promise.all([getLocale(), getMessages()]);

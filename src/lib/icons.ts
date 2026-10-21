@@ -10,7 +10,7 @@ export const ICON_NAMES = [
   "check_circle", "chevron_left", "chevron_right", "close", "cloud_off", "cloud_sync", "colorize", "content_cut",
   "directions_run", "done_all", "eco", "delete", "edit_note", "event_busy", "event_repeat", "event_upcoming",
   "expand_more", "file_download", "flag", "fullscreen", "handyman",
-  "help_outline", "hub", "humidity_mid", "inventory_2", "linear_scale", "location_on", "lock_clock", "more_horiz",
+  "help_outline", "hub", "humidity_mid", "inventory_2", "language", "linear_scale", "location_on", "lock_clock", "more_horiz",
   "network_ping", "neurology",
   "notifications", "pace", "payments", "pest_control", "photo_camera", "photo_library", "pin", "play_arrow",
   "play_circle", "precision_manufacturing", "psychiatry", "psychology", "radio_button_unchecked", "recycling", "refresh", "router", "sanitizer", "save",

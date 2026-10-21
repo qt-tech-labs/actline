@@ -11,7 +11,6 @@ import { RulesCard } from "@/components/right/RulesCard";
 import { PurchaseCard } from "@/components/right/PurchaseCard";
 import { HardwareCard } from "@/components/sidebar/HardwareCard";
 import { LiveCamCard } from "@/components/sidebar/LiveCamCard";
-import { ProjectList } from "@/components/sidebar/ProjectList";
 import { IncidentFab } from "@/components/today/IncidentFab";
 import { TodaySection } from "@/components/today/TodaySection";
 import { Icon } from "@/components/ui/Icon";
@@ -45,9 +44,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
       <main className="mx-auto grid w-full max-w-[1720px] flex-1 grid-cols-1 items-start gap-space-lg px-4 pb-28 pt-space-md md:px-space-xl lg:grid-cols-12 lg:pb-space-md">
         <aside className="flex flex-col gap-space-lg lg:col-span-3">
-          <Suspense fallback={<Skeleton className="h-60" />}>
-            <ProjectList activeId={projectId} />
-          </Suspense>
           {iotEnabled ? (
             <>
               <Suspense fallback={<Skeleton className="h-72" />}>
