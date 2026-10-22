@@ -80,6 +80,168 @@ function series(n: number, base: number, amp: number, last: number, seed: number
   return out;
 }
 
+
+/* ------------------------------------------------------------------ *
+ * Plan shapes
+ *
+ * The seeded projects have the same shape the plan studio produces: stages,
+ * a milestone per stage, a day plan for every project day and an action to
+ * do on that day. A day with a plan but nothing to do is a dead end in the
+ * project view, so every day gets its phase's routine.
+ * ------------------------------------------------------------------ */
+
+type SeedPhase = {
+  /** Short title of the phase: the title of the day plan. */
+  title: string;
+  /** What this range of days achieves: the summary of the day plan. */
+  objective: string;
+  startDay: number;
+  endDay: number;
+  /** The action of a day in this phase. */
+  routine: string;
+  minutes?: number;
+  checklist?: string[];
+};
+
+type SeedStep = {
+  title: string;
+  description?: string;
+  minutes?: number;
+  status?: "done" | "doing" | "todo";
+  completedAt?: Date;
+  clipSeconds?: number;
+  hasCameraShortcut?: boolean;
+  requiresPhoto?: boolean;
+  items?: { label: string; done?: boolean }[];
+  photo?: { filename: string; url: string };
+};
+
+const phaseFor = (phases: SeedPhase[], day: number): SeedPhase =>
+  phases.find((phase) => day >= phase.startDay && day <= phase.endDay) ?? phases[phases.length - 1]!;
+
+/** The stages of a project, the way the studio writes them. */
+async function seedStages(projectId: string, phases: SeedPhase[]) {
+  await db.insert(s.projectStages).values(
+    phases.map((phase, index) => ({
+      projectId,
+      name: `Giai đoạn ${index + 1}: ${phase.title}`,
+      startDay: phase.startDay,
+      endDay: phase.endDay,
+    })),
+  );
+}
+
+/** A milestone at the start of every phase, plus the day the plan ends. */
+async function seedPhaseMilestones(projectId: string, phases: SeedPhase[], totalDays: number) {
+  await db.insert(s.milestones).values([
+    ...phases.map((phase, index) => ({
+      projectId,
+      day: phase.startDay,
+      label: phase.title,
+      title: `N${String(phase.startDay).padStart(2, "0")}: ${phase.title}`,
+      icon: index === 0 ? "check" : "event_upcoming",
+    })),
+    {
+      projectId,
+      day: totalDays,
+      label: "Hoàn thành",
+      title: `N${String(totalDays).padStart(2, "0")}: Hoàn thành kế hoạch ${totalDays} ngày`,
+      icon: "flag",
+      kind: "target" as const,
+    },
+  ]);
+}
+
+/**
+ * A day plan for every project day. Days listed in `overrides` keep their own
+ * title, summary and steps; the other days get their phase's routine.
+ */
+async function seedDayPlans(
+  projectId: string,
+  totalDays: number,
+  phases: SeedPhase[],
+  overrides: Record<number, { title: string; summary: string; steps: SeedStep[]; goldenStart?: string; goldenEnd?: string }> = {},
+) {
+  const plans = await db
+    .insert(s.dayPlans)
+    .values(
+      Array.from({ length: totalDays }, (_, index) => {
+        const day = index + 1;
+        const phase = phaseFor(phases, day);
+        const override = overrides[day];
+        return {
+          projectId,
+          day,
+          title: override?.title ?? phase.title,
+          summary: override?.summary ?? phase.objective,
+          goldenStart: override?.goldenStart ?? null,
+          goldenEnd: override?.goldenEnd ?? null,
+        };
+      }),
+    )
+    .returning();
+
+  const values: (typeof s.steps.$inferInsert)[] = [];
+  for (const plan of plans) {
+    const phase = phaseFor(phases, plan.day);
+    const override = overrides[plan.day];
+    if (override) {
+      override.steps.forEach((step, index) => {
+        values.push({
+          dayPlanId: plan.id,
+          position: index + 1,
+          title: step.title,
+          description: step.description,
+          estimatedMinutes: step.minutes,
+          status: step.status ?? "todo",
+          completedAt: step.completedAt,
+          clipSeconds: step.clipSeconds,
+          hasCameraShortcut: step.hasCameraShortcut,
+          requiresPhoto: step.requiresPhoto,
+        });
+      });
+      continue;
+    }
+    values.push({
+      dayPlanId: plan.id,
+      position: 1,
+      title: phase.routine,
+      estimatedMinutes: phase.minutes ?? 15,
+    });
+  }
+  const inserted = await db.insert(s.steps).values(values).returning();
+
+  // The checklist of every step that has one.
+  const checklist: (typeof s.stepItems.$inferInsert)[] = [];
+  for (const plan of plans) {
+    const override = overrides[plan.day];
+    if (!override) continue;
+    for (const [index, step] of override.steps.entries()) {
+      const row = inserted.find((candidate) => candidate.dayPlanId === plan.id && candidate.position === index + 1);
+      if (!row || !step.items) continue;
+      step.items.forEach((item, itemIndex) => {
+        checklist.push({ stepId: row.id, position: itemIndex + 1, label: item.label, done: item.done ?? false });
+      });
+    }
+  }
+  if (checklist.length > 0) await db.insert(s.stepItems).values(checklist);
+
+  // The photo proof of the steps that ask for one.
+  const photos: (typeof s.stepPhotos.$inferInsert)[] = [];
+  for (const plan of plans) {
+    const override = overrides[plan.day];
+    if (!override) continue;
+    for (const [index, step] of override.steps.entries()) {
+      if (!step.photo) continue;
+      const row = inserted.find((candidate) => candidate.dayPlanId === plan.id && candidate.position === index + 1);
+      if (row) photos.push({ stepId: row.id, filename: step.photo.filename, url: step.photo.url });
+    }
+  }
+  if (photos.length > 0) await db.insert(s.stepPhotos).values(photos);
+
+  return new Map(plans.map((plan) => [plan.day, plan]));
+}
+
 async function main() {
   await db.delete(s.users).where(eq(s.users.email, email));
 
@@ -109,107 +271,266 @@ async function main() {
     .returning();
   if (!main) throw new Error("project insert failed");
 
-  await db.insert(s.projects).values([
-    { userId: user.id, name: "Robot telepresence v2", icon: "precision_manufacturing", startDate: localDate(-27), totalDays: 60, budgetVnd: 0, expectedRevenueVnd: 0 },
-    { userId: user.id, name: "Mô hình sa bàn Cyberpunk 1:35", icon: "architecture", startDate: localDate(-4), totalDays: 40, budgetVnd: 0, expectedRevenueVnd: 0 },
-    { userId: user.id, name: "Ủ phân hữu cơ Bokashi", icon: "recycling", startDate: localDate(-11), totalDays: 30, budgetVnd: 0, expectedRevenueVnd: 0 },
-  ]);
+  // The other projects are real plans too: stages, milestones and a day to work on.
+  const sideProjects: { name: string; icon: string; startOffset: number; totalDays: number; phases: SeedPhase[] }[] = [
+    {
+      name: "Robot telepresence v2",
+      icon: "precision_manufacturing",
+      startOffset: 27,
+      totalDays: 60,
+      phases: [
+        {
+          title: "Thu thập linh kiện & thiết kế",
+          objective: "Đủ linh kiện và bản vẽ cơ cấu để bắt đầu dựng.",
+          startDay: 1,
+          endDay: 18,
+          routine: "Đối chiếu linh kiện với danh sách & đo khung chính",
+          minutes: 20,
+          checklist: ["Kiểm tra linh kiện theo danh sách", "Đo và ghi kích thước khung"],
+        },
+        {
+          title: "Dựng khung & cơ khí",
+          objective: "Khung robot chắc và các khớp xoay đúng hành trình.",
+          startDay: 19,
+          endDay: 36,
+          routine: "Kiểm tra khớp xoay & siết bulong theo danh sách",
+          minutes: 30,
+          checklist: ["Làm nội thất khung", "Siết bulong theo bảng mô-men"],
+        },
+        {
+          title: "Lắp ráp, lập trình & test",
+          objective: "Robot chạy được và truyền hình ổn định.",
+          startDay: 37,
+          endDay: 60,
+          routine: "Test truyền hình & đo độ trễ",
+          minutes: 20,
+          checklist: ["Chạy bộ test tự động", "Ghi lại độ trễ và ảnh chụp"],
+        },
+      ],
+    },
+    {
+      name: "Mô hình sa bàn Cyberpunk 1:35",
+      icon: "architecture",
+      startOffset: 4,
+      totalDays: 40,
+      phases: [
+        {
+          title: "Dàn khung & nền",
+          objective: "Khung 30x30cm chắc chắn và nền hoàn chỉnh.",
+          startDay: 1,
+          endDay: 12,
+          routine: "Cắt dán khung & hoàn thiện nền",
+          minutes: 30,
+          checklist: ["Cắt dán khung gỗ", "Sơn nền theo bảng màu"],
+        },
+        {
+          title: "Phối cảnh kiến trúc",
+          objective: "Các tòa nhà có đúng tỉ lệ và ánh sáng chủ đề.",
+          startDay: 13,
+          endDay: 26,
+          routine: "Dán thêm chi tiết kiến trúc",
+          minutes: 25,
+          checklist: ["Dán từng mặt tiền", "Kiểm tra tỉ lệ với bản vẽ"],
+        },
+        {
+          title: "Đèn & hiệu ứng",
+          objective: "Dải LED neon và hiệu ứng mưa tạo đúng không khí.",
+          startDay: 27,
+          endDay: 40,
+          routine: "Đo lại dải LED & hiệu chỉnh hiệu ứng",
+          minutes: 20,
+          checklist: ["Đo dòng cho từng đoạn LED", "Chỉnh hiệu ứng mưa"],
+        },
+      ],
+    },
+    {
+      name: "Ủ phân hữu cơ Bokashi",
+      icon: "recycling",
+      startOffset: 11,
+      totalDays: 30,
+      phases: [
+        {
+          title: "Chuẩn bị men & nguyên liệu",
+          objective: "Men Bokashi sống và nguyên liệu đã qua xử lý.",
+          startDay: 1,
+          endDay: 8,
+          routine: "Kiểm tra men và phun tưới nguyên liệu",
+          minutes: 15,
+          checklist: ["Kiểm tra men có sống", "Phun tưới mẻ đầu tiên"],
+        },
+        {
+          title: "Ủ các mẻ đầu",
+          objective: "Các mẻ đầu ủ đúng thời gian và nhiệt độ.",
+          startDay: 9,
+          endDay: 20,
+          routine: "Kiểm tra nhiệt độ thùng ủ và đảo mẻ",
+          minutes: 15,
+          checklist: ["Ghi nhiệt độ thùng ủ", "Đảo mẻ theo lịch"],
+        },
+        {
+          title: "Bón từng đợt & thu hoạch",
+          objective: "Bón đúng liều và thu hoạch mẻ đầu.",
+          startDay: 21,
+          endDay: 30,
+          routine: "Bón phân hữu cơ và ghi nhận độ ẩm",
+          minutes: 15,
+          checklist: ["Bón theo bảng liều", "Ghi nhận độ ẩm sau mỗi đợt"],
+        },
+      ],
+    },
+  ];
+
+  for (const side of sideProjects) {
+    const [project] = await db
+      .insert(s.projects)
+      .values({
+        userId: user.id,
+        name: side.name,
+        icon: side.icon,
+        startDate: localDate(-side.startOffset),
+        totalDays: side.totalDays,
+        budgetVnd: 0,
+        expectedRevenueVnd: 0,
+      })
+      .returning();
+    if (!project) throw new Error(`${side.name} insert failed`);
+    await seedStages(project.id, side.phases);
+    await seedPhaseMilestones(project.id, side.phases, side.totalDays);
+    await seedDayPlans(project.id, side.totalDays, side.phases);
+  }
   const projectId = main.id;
 
-  await db.insert(s.projectStages).values([
-    { projectId, name: "Giai đoạn 1: Gieo hạt & Sinh trưởng", startDay: 1, endDay: 14 },
-    { projectId, name: "Giai đoạn 2: Ra hoa & Thụ phấn tập trung", startDay: 15, endDay: 27 },
-    { projectId, name: "Giai đoạn 3: Nuôi quả & Phòng bệnh", startDay: 28, endDay: 45 },
-  ]);
+  const PHASES: SeedPhase[] = [
+    {
+      title: "Gieo hạt & Sinh trưởng",
+      objective: "Hạt nảy mầm đều, cây con khỏe và bám được giàn.",
+      startDay: 1,
+      endDay: 14,
+      routine: "Tưới buổi sáng & kiểm tra độ ẩm",
+      minutes: 10,
+      checklist: ["Kiểm tra độ ẩm đất bằng tay", "Tưới quanh gốc, tránh út lá"],
+    },
+    {
+      title: "Ra hoa & Thụ phấn tập trung",
+      objective: "Hoa cái nở đều và được thụ phấn đúng thời điểm.",
+      startDay: 15,
+      endDay: 27,
+      routine: "Kiểm tra hoa cái nở & tưới nhẹ",
+      minutes: 10,
+      checklist: ["Đếm hoa cái đang nở", "Tưới nhẹ khi trời mát"],
+    },
+    {
+      title: "Nuôi quả & Phòng bệnh",
+      objective: "Quả lớn đều, lá xanh và không sâu bệnh.",
+      startDay: 28,
+      endDay: 45,
+      routine: "Tưới, nhặt lá & kiểm tra sâu bệnh",
+      minutes: 15,
+      checklist: ["Nhặt lá vàng, lá sát gốc", "Kiểm tra mặt dưới lá cho sâu"],
+    },
+  ];
+
+  await seedStages(projectId, PHASES);
 
   type M = Omit<typeof s.milestones.$inferInsert, "projectId">;
   const milestones: M[] = [
     { day: 1, label: "Gieo hạt", title: "N01: Gieo hạt & Ủ ẩm", icon: "check" },
-    { day: 2, label: "", title: "N02 - N03: Nứt nanh", isMinor: true },
+    { day: 2, label: "Nứt nanh", title: "N02 - N03: Nứt nanh" },
     { day: 4, label: "Nảy mầm", title: "N04: Nảy mầm & Ra lá mầm" },
-    { day: 6, label: "", title: "N06: Ra lá thật", isMinor: true },
+    { day: 6, label: "Ra lá thật", title: "N06: Ra lá thật" },
     { day: 8, label: "Lên giàn", title: "N08: Cho leo giàn lưới" },
-    { day: 10, label: "", title: "N10: Bón thúc đợt 1", isMinor: true },
+    { day: 10, label: "Bón thúc đợt 1", title: "N10: Bón thúc đợt 1" },
     { day: 12, label: "Bón lót", title: "N12: Bón hữu cơ Bokashi" },
     { day: 14, label: "Tỉa nhánh", title: "N14: Cắt tỉa nhánh phụ" },
     { day: 15, label: "Kiểm tra ẩm", title: "N15: Kiểm tra ẩm & Chuẩn bị thụ phấn" },
     { day: 16, label: "Thụ phấn đợt 1", title: "N16: Thụ phấn hoa cái đợt 1 & tỉa chồi nách 1-5" },
     { day: 17, label: "Mua Kali", title: "N17: Mua phân Kali hữu cơ & chuẩn bị tưới", icon: "shopping_basket", kind: "shopping" },
     { day: 18, label: "Đợt 2", title: "N18: Thụ phấn đợt 2 & Bọc lưới chùm hoa" },
-    { day: 20, label: "", title: "N20: Kiểm tra phát triển rễ", isMinor: true },
+    { day: 20, label: "Kiểm tra rễ", title: "N20: Kiểm tra phát triển rễ" },
     { day: 22, label: "Bọc trái", title: "N22: Bọc túi bảo vệ trái non", icon: "shield" },
-    { day: 25, label: "", title: "N25: Bón thúc kali nuôi quả", isMinor: true },
+    { day: 25, label: "Bón thúc kali", title: "N25: Bón thúc kali nuôi quả" },
     { day: 28, label: "Tỉa ngọn", title: "N28: Bấm ngọn thân chính ở lá 22" },
-    { day: 32, label: "", title: "N32: Phòng ngừa bọ phấn trắng", isMinor: true },
+    { day: 32, label: "Phòng bọ trắng", title: "N32: Phòng ngừa bọ phấn trắng" },
     { day: 35, label: "Soi sâu", title: "N35: Soi camera AI phát hiện phấn trắng và sâu rầy", icon: "pest_control" },
-    { day: 40, label: "", title: "N40: Kiểm tra kích thước dưa", isMinor: true },
+    { day: 40, label: "Kiểm tra dưa", title: "N40: Kiểm tra kích thước dưa" },
     { day: 45, label: "Thu hoạch", title: "N45: Thu hoạch dưa leo đợt 1 (Đích đến chu kỳ 45 ngày)", icon: "flag", kind: "target" },
   ];
   await db.insert(s.milestones).values(milestones.map((m) => ({ ...m, projectId })));
 
-  const [plan] = await db
-    .insert(s.dayPlans)
-    .values({
-      projectId,
-      day: CURRENT_DAY,
+  const plans = await seedDayPlans(projectId, 45, PHASES, {
+    [CURRENT_DAY]: {
       title: "Thụ phấn hoa cái đợt 1 & Tỉa chồi nách mắt lá 1-5",
       summary: "Tranh thủ phấn bung khỏe sáng sớm, đồng thời tỉa nhánh phụ để dồn dinh dưỡng nuôi quả non.",
       goldenStart: "07:00",
       goldenEnd: "09:30",
-    })
-    .returning();
-  if (!plan) throw new Error("plan insert failed");
-  const dayPlanId = plan.id;
-
-  await db.insert(s.dayPlans).values([
-    { projectId, day: 17, title: "Kiểm tra đậu quả & tưới chuối Kali", summary: "Kiểm tra quả đã đậu và bổ sung kali hữu cơ." },
-    { projectId, day: 18, title: "Bọc lưới ngừa ruồi vàng đục quả", summary: "Thụ phấn đợt 2 và bọc lưới chùm hoa." },
-  ]);
-  // Lookahead needs a time estimate; stored on the first step of each future day.
-  const futurePlans = await db.query.dayPlans.findMany({ where: (t, { and, eq, gt }) => and(eq(t.projectId, projectId), gt(t.day, CURRENT_DAY)) });
-  for (const p of futurePlans) {
-    await db.insert(s.steps).values({ dayPlanId: p.id, position: 1, title: p.title, estimatedMinutes: p.day === 17 ? 20 : 30 });
-  }
-
-  const insertedSteps = await db
-    .insert(s.steps)
-    .values([
-      {
-        dayPlanId, position: 1, status: "done", completedAt: todayAt("07:15"),
-        title: "Khảo sát & đánh dấu hoa cái nở sáng nay",
-        description: "Đã phát hiện và đánh dấu 3 hoa cái trên giàn số 1.",
-      },
-      {
-        dayPlanId, position: 2, status: "doing", estimatedMinutes: 15, clipSeconds: 30, hasCameraShortcut: true,
-        title: "Thu phấn hoa đực & quét đều đầu nhụy hoa cái",
-        description: "Vặt cánh hoa đực, dùng cọ số 4 xoa nhẹ hạt phấn 3 vòng quanh nhụy hoa cái.",
-      },
-      {
-        dayPlanId, position: 3, estimatedMinutes: 15,
-        title: "Tỉa sạch chồi nách và tua cuốn từ mắt lá 1 - 5",
-        description: "Cắt vát 45 độ sát nách lá, tạo độ thoáng gốc ngừa nấm mốc.",
-      },
-      { dayPlanId, position: 4, requiresPhoto: true, title: "Chụp ảnh hoa đã thụ phấn lưu nhật ký" },
-    ])
-    .returning();
-  const step = (pos: number) => {
-    const found = insertedSteps.find((x) => x.position === pos);
-    if (!found) throw new Error(`step ${pos} missing`);
-    return found;
-  };
-
-  await db.insert(s.stepItems).values([
-    { stepId: step(2).id, position: 1, label: "Hái 2 hoa đực vừa bung phấn", done: true },
-    { stepId: step(2).id, position: 2, label: "Thụ phấn hoa cái #1 (mắt lá 7)" },
-    { stepId: step(2).id, position: 3, label: "Thụ phấn hoa cái #2 & #3 (mắt lá 8, 9)" },
-  ]);
-  await db.insert(s.stepPhotos).values({
-    stepId: step(4).id,
-    filename: "SNAP-0822.JPG",
-    url: "https://lh3.googleusercontent.com/aida-public/AB6AXuCbnR-5AAytL_JbMbferbq0oKj-DLy-kVH5Ps_ALoTOmsjjPf9McI2n0d2g_oO7zW_D9WDcDFBPZyS-5roZBX9hihG2Pznuf8E9KVvtvr8VwS8_AwqMTDMBObmfZwQZNt8uTArzMqwmImC_KWxCzAXFkVXKpbC8l8rmNN03cCk6tvdtI7bFBVTW1QoBZx06S9d1OW35jBOpdZyNTaJap5PBfqFu3dGhlmUr9nz1gPUAVYA0BL1phg",
+      steps: [
+        {
+          title: "Khảo sát & đánh dấu hoa cái nở sáng nay",
+          description: "Đã phát hiện và đánh dấu 3 hoa cái trên giàn số 1.",
+          status: "done",
+          completedAt: todayAt("07:15"),
+        },
+        {
+          title: "Thu phấn hoa đực & quét đều đầu nhụy hoa cái",
+          description: "Vặt cánh hoa đực, dùng cọ số 4 xoa nhẹ hạt phấn 3 vòng quanh nhụy hoa cái.",
+          status: "doing",
+          minutes: 15,
+          clipSeconds: 30,
+          hasCameraShortcut: true,
+          items: [
+            { label: "Hái 2 hoa đực vừa bung phấn", done: true },
+            { label: "Thụ phấn hoa cái #1 (mắt lá 7)" },
+            { label: "Thụ phấn hoa cái #2 & #3 (mắt lá 8, 9)" },
+          ],
+        },
+        {
+          title: "Tỉa sạch chồi nách và tua cuốn từ mắt lá 1 - 5",
+          description: "Cắt vát 45 độ sát nách lá, tạo độ thoáng gốc ngừa nấm mốc.",
+          minutes: 15,
+        },
+        {
+          title: "Chụp ảnh hoa đã thụ phấn lưu nhật ký",
+          requiresPhoto: true,
+          photo: {
+            filename: "SNAP-0822.JPG",
+            url: "https://lh3.googleusercontent.com/aida-public/AB6AXyCbnR-5AAytL_JbMbferbq0oKj-DLy-kVH5Ps_ALoTOmsjjPf9McI2n0d2g_oO7zW_D9WDcDFBPZyS-5roZBX9hihG2Pznuf8E9KVvtvr8VwS8_AwqMTDMBObmfZwQZNt8uTArzMqwmImC_KWxCzAXFkVXKpbC8l8rmNN03cCk6tvdtI7bFBVTW1QoBZx06dS9d1OW35jBOpdZyNTaJap5PBfqFu3dGhlmUr9nz1gPUAVYA0BL1phg",
+          },
+        },
+      ],
+    },
+    17: {
+      title: "Kiểm tra đậu quả & tưới chuối Kali",
+      summary: "Kiểm tra quả đã đậu và bổ sung kali hữu cơ.",
+      steps: [{ title: "Kiểm tra đậu quả & tưới chuối Kali", minutes: 20 }],
+    },
+    18: {
+      title: "Bọc lưới ngừa ruồi vàng đục quả",
+      summary: "Thụ phấn đợt 2 và bọc lưới chùm hoa.",
+      steps: [{ title: "Bọc lưới chùm hoa", minutes: 30 }],
+    },
   });
+  const dayPlanId = plans.get(CURRENT_DAY)!.id;
 
+  // The purchases of the plan, on the day they were bought, with what they cost.
+  const purchases = [
+    { day: 1, name: "Hạt giống dưa leo Nhật", icon: "science", quantity: "x1", price: 120_000 },
+    { day: 4, name: "Giá thể & chậu", icon: "handyman", quantity: "x1", price: 310_000 },
+    { day: 8, name: "Giàn lưới", icon: "settings_input_component", quantity: "x1", price: 180_000 },
+    { day: 12, name: "Phân Bokashi", icon: "recycling", quantity: "10kg", price: 95_000 },
+    { day: 14, name: "Dụng cụ tỉa", icon: "content_cut", quantity: "x1", price: 140_000 },
+  ];
   await db.insert(s.supplies).values([
+    ...purchases.map((purchase) => ({
+      dayPlanId: plans.get(purchase.day)!.id,
+      name: purchase.name,
+      icon: purchase.icon,
+      quantity: purchase.quantity,
+      available: true,
+      unitPriceVnd: purchase.price,
+      actualPriceVnd: purchase.price,
+      buyByDay: purchase.day,
+      boughtDay: purchase.day,
+    })),
     { dayPlanId, name: "Cọ mềm số 4", icon: "brush", quantity: "x1" },
     { dayPlanId, name: "Kéo tỉa mũi nhọn", icon: "content_cut", quantity: "x1" },
     { dayPlanId, name: "Cồn 70° sát khuẩn", icon: "sanitizer", quantity: "100ml" },
@@ -309,11 +630,36 @@ async function seedOfflineHub(userId: string) {
   if (!greenhouse) throw new Error("greenhouse insert failed");
   const projectId = greenhouse.id;
 
-  await db.insert(s.projectStages).values([
-    { projectId, name: "Giai đoạn 1: Gieo hạt & Ủ ẩm", startDay: 1, endDay: 10 },
-    { projectId, name: "Giai đoạn 2: Cây con & Tỉa chồi", startDay: 11, endDay: 20 },
-    { projectId, name: "Giai đoạn 3: Bón thúc & Phòng bệnh", startDay: 21, endDay: 30 },
-  ]);
+  const PHASES: SeedPhase[] = [
+    {
+      title: "Gieo hạt & Ủ ẩm",
+      objective: "Hạt nảy mầm đều và luống giữ ẩm ổn định.",
+      startDay: 1,
+      endDay: 10,
+      routine: "Tưới luống & kiểm tra độ ẩm",
+      minutes: 10,
+      checklist: ["Tưới đều tay, tránh đọng nước", "Kiểm tra độ ẩm luống bằng tay"],
+    },
+    {
+      title: "Cây con & Tỉa chồi",
+      objective: "Cây con khỏe và được tỉa chồi đúng thời điểm.",
+      startDay: 11,
+      endDay: 20,
+      routine: "Tỉa chồi & bón phân hữu cơ",
+      minutes: 15,
+      checklist: ["Tỉa chồi già", "Bón phân hữu cơ theo lịch"],
+    },
+    {
+      title: "Bón thúc & Phòng bệnh",
+      objective: "Rau đủ dinh dưỡng, lá xanh và không sâu bệnh.",
+      startDay: 21,
+      endDay: 30,
+      routine: "Bón thúc & kiểm tra sâu bệnh",
+      minutes: 15,
+      checklist: ["Bón thúc theo bảng liều", "Soi lá tìm sâu, rệp"],
+    },
+  ];
+  await seedStages(projectId, PHASES);
 
   await db.insert(s.milestones).values([
     { projectId, day: 1, label: "Gieo hạt", title: "N01: Gieo hạt & Ủ ẩm", icon: "check" },
@@ -323,36 +669,36 @@ async function seedOfflineHub(userId: string) {
     { projectId, day: 30, label: "Thu hoạch", title: "N30: Thu hoạch đợt 1", icon: "flag", kind: "target" },
   ]);
 
-  const [plan] = await db
-    .insert(s.dayPlans)
-    .values({
-      projectId,
-      day: CURRENT,
+  const plans = await seedDayPlans(projectId, 30, PHASES, {
+    [CURRENT]: {
       title: "Tưới tay & bổ sung nước cho luống rau",
       summary: "Hub đang mất kết nối nên chuyển sang tưới tay theo lịch và kiểm tra độ ẩm bằng tay.",
-    })
-    .returning();
-  if (!plan) throw new Error("greenhouse plan insert failed");
-
-  const inserted = await db
-    .insert(s.steps)
-    .values([
-      { dayPlanId: plan.id, position: 1, status: "done", completedAt: todayAt("07:10"), title: "Kiểm tra độ ẩm luống bằng tay", description: "Nhúng ngón tay sâu 3cm vào giá thể, đã khô nhẹ." },
-      { dayPlanId: plan.id, position: 2, estimatedMinutes: 25, title: "Tưới tay luống rau theo bộ chuôi 8L", description: "Tưới đều tay, tránh đọng nước trên lá non." },
-      { dayPlanId: plan.id, position: 3, estimatedMinutes: 10, title: "Ghi nhận chỉ số để đối chiếu khi hub kết nối lại", description: "Ghi nhiệt độ và độ ẩm ước vào sổ tay để so sánh với dữ liệu cảm biến." },
-    ])
-    .returning();
-  const step = (pos: number) => {
-    const found = inserted.find((x) => x.position === pos);
-    if (!found) throw new Error(`greenhouse step ${pos} missing`);
-    return found;
-  };
-
-  await db.insert(s.stepItems).values([
-    { stepId: step(2).id, position: 1, label: "Bình 8L đầy nước tưới", done: true },
-    { stepId: step(2).id, position: 2, label: "Tưới mỗi luống 2 lần" },
-    { stepId: step(3).id, position: 1, label: "Ghi nhiệt độ ước tay" },
-  ]);
+      steps: [
+        {
+          title: "Kiểm tra độ ẩm luống bằng tay",
+          description: "Nhúng ngón tay sâu 3cm vào giá thể, đã khô nhẹ.",
+          status: "done",
+          completedAt: todayAt("07:10"),
+        },
+        {
+          title: "Tưới tay luống rau theo bộ chuôi 8L",
+          description: "Tưới đều tay, tránh đọng nước trên lá non.",
+          minutes: 25,
+          items: [
+            { label: "Bình 8L đầy nước tưới", done: true },
+            { label: "Tưới mỗi luống 2 lần" },
+          ],
+        },
+        {
+          title: "Ghi nhận chỉ số để đối chiếu khi hub kết nối lại",
+          description: "Ghi nhiệt độ và độ ẩm ước vào sổ tay để so sánh với dữ liệu cảm biến.",
+          minutes: 10,
+          items: [{ label: "Ghi nhiệt độ ước tay" }],
+        },
+      ],
+    },
+  });
+  const plan = plans.get(CURRENT)!;
 
   await db.insert(s.supplies).values([
     { dayPlanId: plan.id, name: "Bình tưới 8L", icon: "sanitizer", quantity: "x1", available: true },

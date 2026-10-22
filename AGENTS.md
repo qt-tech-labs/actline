@@ -140,7 +140,8 @@ holds **items** (one action item, pinned to a day). A day with no item is a vali
   switches a pointer cursor; disabled and `aria-disabled` elements keep their own cursor.
 - The milestone track is a **day picker**: every node is a link to `?project=…&day=N` and the main
   column shows that day's plan. The nodes share one marker band so the track line runs through the
-  circles. `DayPlanFrame` slides the new day in from the side the user travelled (200 ms, transform
+  circles, and the strip keeps the day you are looking at in view (it centres on the selected
+  marker, not on today). `DayPlanFrame` slides the new day in from the side the user travelled (200 ms, transform
   + opacity) — the first render is still, and reduced motion swaps instead of slides.
 
 ## Gotchas

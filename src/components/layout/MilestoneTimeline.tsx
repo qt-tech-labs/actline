@@ -36,6 +36,7 @@ function NodeView({
       <li title={node.title} className={cn("relative z-10 flex flex-col items-center", node.state === "done" ? "opacity-60" : "opacity-40")}>
         <Link
           href={href}
+          data-selected={selected || undefined}
           aria-label={t("review", { day: code })}
           className={cn("flex items-center justify-center", MARKER_BAND)}
         >
@@ -50,6 +51,7 @@ function NodeView({
       <li data-today title={node.title} aria-current="step" className="relative z-20 mx-2 flex flex-col items-center">
         <Link
           href={`/?project=${projectId}`}
+          data-selected={selected || undefined}
           aria-label={t("today", { day: pad(node.day) })}
           className={cn("flex items-center justify-center", MARKER_BAND)}
         >
@@ -80,7 +82,7 @@ function NodeView({
   return (
     <li title={node.title} className="relative z-10 flex flex-col items-center">
       <Link href={href} aria-label={t("review", { day: code })} className="group flex flex-col items-center">
-        <span className={cn("flex items-center justify-center", MARKER_BAND)}>
+        <span data-selected={selected || undefined} className={cn("flex items-center justify-center", MARKER_BAND)}>
           <span
             className={cn(
               "flex size-6 items-center justify-center rounded-full shadow-sm interactive",
@@ -158,26 +160,27 @@ export function MilestoneTimeline({
   const fill = useRef<HTMLDivElement>(null);
   const sections = groupByPhase(nodes, phases);
 
-  // Centre the "today" node on first paint (scrollLeft only: never scrolls the page)
-  // and let the solid track end where today is. The icon font and the text fonts
-  // land after the first paint and change the widths, so both are redone while
-  // the content still resizes.
+  // The track: the solid part ends at today, the line runs through the markers,
+  // and the day you are looking at stays in view. The icon font and the text
+  // fonts land after the first paint and change the widths, so the geometry is
+  // redone while the content still resizes.
   useEffect(() => {
     const box = scroller.current;
     if (!box) return;
     let cancelled = false;
     let observer: ResizeObserver | null = null;
+
+    /** The marker the track keeps in view: the selected day, or today. */
+    const focus = () => box.querySelector<HTMLElement>("[data-selected]") ?? box.querySelector<HTMLElement>("[data-today]");
+
+    /** The geometry of the track. */
     const sync = () => {
       const today = box.querySelector<HTMLElement>("[data-today]");
       if (!today || cancelled) return;
       // The sections are sized by their content, so their widths are what change
       // when the fonts land: watch them, not just the scroller.
       content.current?.querySelectorAll("ol > li").forEach((el) => observer?.observe(el));
-      // 1. centre today in the scroller
-      const boxRect = box.getBoundingClientRect();
-      const todayRect = today.getBoundingClientRect();
-      box.scrollLeft += todayRect.left - boxRect.left - (box.clientWidth - todayRect.width) / 2;
-      // 2. the solid track stops at today. The nodes are grouped by phase, so the
+      // The solid track stops at today. The nodes are grouped by phase, so the
       // share of finished days is not the share of the track. Both rects are read
       // after the scroll, so they belong to the same frame.
       const track = box.querySelector<HTMLElement>("[data-track]");
@@ -196,16 +199,51 @@ export function MilestoneTimeline({
         }
       }
     };
+
+    /** Brings a marker into the middle of the strip (the page never scrolls). */
+    const centre = (target: HTMLElement | null, smooth: boolean) => {
+      if (!target) return;
+      const boxRect = box.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const left = box.scrollLeft + (targetRect.left - boxRect.left) - (box.clientWidth - targetRect.width) / 2;
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      box.scrollTo({ left, behavior: smooth && !reduce ? "smooth" : "auto" });
+    };
+
     observer = new ResizeObserver(() => sync());
     sync();
+    centre(focus(), false);
     observer.observe(box);
     if (content.current) observer.observe(content.current);
-    void document.fonts?.ready.then(() => sync());
+    void document.fonts?.ready.then(() => {
+      if (cancelled) return;
+      sync();
+      centre(focus(), false);
+    });
     return () => {
       cancelled = true;
       observer.disconnect();
     };
   }, []);
+
+  // The track follows the selection: picking a day (a link, the URL, the back
+  // button) brings that day into view instead of leaving the strip where it was.
+  const firstSelection = useRef(true);
+  useEffect(() => {
+    const box = scroller.current;
+    if (!box) return;
+    if (firstSelection.current) {
+      firstSelection.current = false;
+      return; // the mount effect already centred it
+    }
+    const target = box.querySelector<HTMLElement>("[data-selected]");
+    if (!target) return;
+    const boxRect = box.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const left = box.scrollLeft + (targetRect.left - boxRect.left) - (box.clientWidth - targetRect.width) / 2;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    box.scrollTo({ left, behavior: reduce ? "auto" : "smooth" });
+  }, [selectedDay]);
 
   const scrollBy = (dir: -1 | 1) => {
     const box = scroller.current;

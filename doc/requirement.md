@@ -174,7 +174,7 @@ Status codes: 200/201/202 success, 400 bad JSON, 401 no user, 404 not found or n
 
 Projects carry an `iot_enabled` flag (FR-9). Entities: users, projects, project stages, milestones, day plans, steps, step checklist items, step photos, supplies, expenses, IoT hubs (with their JSON configuration), hub commands, devices, sensor readings, sensor targets, AI insights, automation rules, notes, incidents. See `src/server/db/schema.ts`.
 
-Seed (`npm run db:seed`): demo user `demo@actline.app` and the "Vườn dưa leo ban công Nhật" project, positioned on **day 16 of 45** relative to the seed date, with figures from the design (845,000 đ spent, 2,400,000 đ expected revenue, 1.2M budget, 4 hardware devices, 3 automation rules, 32 readings per sensor).
+Seed (`npm run db:seed`): demo user `demo@actline.app` and five projects — the "Vườn dưa leo ban công Nhật" project (positioned on **day 16 of 45** relative to the seed date, with the figures from the design: 845,000 đ spent, 2,400,000 đ expected revenue, 1.2M budget, 4 hardware devices, 3 automation rules, 32 readings per sensor), the greenhouse project whose hub stopped reporting, and three more. Every seeded project has the same shape the plan studio produces: stages, a milestone per stage, **a day plan for every project day with at least one action**, and its purchases tracked with their prices. Re-running the seed is destructive: it deletes the demo user and everything that belongs to it.
 
 ## 6. Acceptance criteria
 

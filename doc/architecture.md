@@ -163,6 +163,22 @@ and the persistent action bar.
   "Thêm" has no screen yet.
 
 
+## 2c. The demo data
+
+`npm run db:seed` writes the demo user and five projects. They have the **same shape the plan studio
+produces**, so the demo is not a special case:
+
+- stages (the phases of the plan), a milestone per stage plus the checkpoints, and **a day plan for
+  every project day** — a day with a plan and nothing to do would be a dead end in the project view,
+  so every day gets its phase's routine as one action;
+- the purchases are `supplies` rows with their price, marked bought, on the day they were bought, so
+  the purchase list and the money log agree;
+- the checkpoint milestones are **full nodes**, not micro-ticks: a tick carries no day code and no
+  date, so the user cannot tell which day it is.
+
+`seedStages`, `seedPhaseMilestones` and `seedDayPlans` in `db/seed.ts` write that shape; the demo
+projects only add the content on top (the detailed steps of the current day, the sensors, the hub).
+
 ## 3a. Days, dates and timezones
 
 - A project day is a **calendar date**: `dateOfProjectDay(start_date, day)` shifts the start date by
@@ -172,8 +188,10 @@ and the persistent action bar.
   in that timezone (`PROJECT_TZ` until the cookie arrives). The clock in the live-cam card uses the
   device timezone as well. The project timezone (`Asia/Ho_Chi_Minh`) is only the fallback.
 - The milestone track shows the day code **and** the calendar date (`N16 · 20/10`), and every node
-  opens the plan of that day: `GET /projects/{id}/days/{day}` (ownership checked) feeds the review
-  dialog.
+  opens the plan of that day: `GET /projects/{id}/days/{day}` (ownership checked) feeds the main
+  view. The strip keeps the day you are looking at in view: it centres the **selected** marker (not
+  today) when the selection changes, so a day picked from the URL or the back button is never
+  off-screen.
 
 ## 4. Rendering and performance (Vercel React best practices applied)
 
