@@ -193,6 +193,13 @@
 .day-plan-frame-forward { animation: day-plan-in-forward 200ms var(--ease-out-strong) both; }
 .day-plan-frame-back { animation: day-plan-in-back 200ms var(--ease-out-strong) both; }
 
+/* A toast enters with a short rise and fade; transform + opacity only. */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.toast-in { animation: toast-in 200ms var(--ease-out-strong) both; }
+
 @utility glow-ok {
   box-shadow: 0 0 6px rgba(27, 138, 90, 0.5);
 }

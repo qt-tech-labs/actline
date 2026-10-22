@@ -56,6 +56,9 @@ export const SUGGESTIONS = [
   },
 ] as const;
 
+/** The models the plan studio offers, in the order the dropdown lists them. */
+export const PLAN_PROVIDERS = ["gemini", "openrouter", "local"] as const;
+
 export const EXPERIENCE_LEVELS = ["beginner", "basic", "pro"] as const;
 
 export const blueprintParamsSchema = z.object({
@@ -69,6 +72,26 @@ export const blueprintInputSchema = blueprintParamsSchema.extend({
   prompt: z.string().trim().min(8).max(600),
   iotEnabled: z.boolean().nullable().default(null),
 });
+
+export const blueprintGenerationSchema = blueprintInputSchema.extend({
+  provider: z.enum(PLAN_PROVIDERS).optional(),
+  /** Debug only: a ready-made plan that is returned instead of asking a model. */
+  mockPlan: z.record(z.string(), z.unknown()).optional(),
+});
+
+/** The least a mocked plan must have; `normalizeBlueprint` takes care of the rest. */
+export const mockPlanSchema = z
+  .object({
+    name: z.string(),
+    totalDays: z.number(),
+    dailyMinutes: z.number(),
+    budgetVnd: z.number(),
+    nodes: z.array(z.record(z.string(), z.unknown())).min(1),
+    supplies: z.array(z.record(z.string(), z.unknown())),
+    devices: z.array(z.record(z.string(), z.unknown())),
+    risks: z.array(z.record(z.string(), z.unknown())),
+  })
+  .passthrough();
 
 /** The values a plan is actually built with: what the user set, or the fallback. */
 export function resolveParams(params: BlueprintParams): BlueprintConstraints {

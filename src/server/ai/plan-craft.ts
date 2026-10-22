@@ -2,32 +2,10 @@ import "server-only";
 
 import { FALLBACK_PARAMS, normalizeBlueprint } from "@/lib/blueprint";
 import type { Blueprint, BlueprintDevice, BlueprintNode, BlueprintRisk, BlueprintSupply } from "@/lib/types";
-import { AI_TIMEOUT_MS, GEMINI_MODEL, gemini } from "./client";
+import type { Architect, ArchitectCall, ArchitectResult } from "./architect";
 import { PLAN_CRAFT, type PlanCraftConstraints, type PlanCraftContext, type PlanCraftEnvelope } from "./skills";
 import { PLAN_CRAFT_ARG_SCHEMAS, type PlanCraftToolName } from "./skills/plan-craft/tools";
 import { validateProposedConstraints, type PlanCraftResult } from "./skills/plan-craft/validate";
-
-/** A function call the model asked for. */
-type FunctionCall = {
-  type: "function_call";
-  id: string;
-  name: string;
-  arguments: Record<string, unknown>;
-};
-
-function isFunctionCall(step: { type: string }): step is FunctionCall {
-  return step.type === "function_call";
-}
-
-type FunctionResult = {
-  type: "function_result";
-  call_id: string;
-  name: string;
-  result: string;
-  is_error?: boolean;
-};
-
-type CallOutcome = { ok: boolean; result: FunctionResult };
 
 /** The plan while it is being assembled. */
 type Draft = {
@@ -71,10 +49,13 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 /**
- * The knobs depend on the topic, so the model proposes them first. Whatever the
- * user set by hand always wins; the rest is filled in by the model.
+ * The knobs depend on the topic, so the model proposes them first. Whatever
+ * the user set by hand always wins; the rest is filled in by the model.
  */
-async function proposeConstraints(envelope: PlanCraftEnvelope): Promise<PlanCraftConstraints> {
+async function proposeConstraints(
+  envelope: PlanCraftEnvelope,
+  architect: Architect,
+): Promise<PlanCraftConstraints> {
   let proposed: { totalDays: number; dailyMinutes: number; budgetVnd: number; experience: "beginner" | "basic" | "pro" } | null = null;
 
   const missing =
@@ -85,17 +66,16 @@ async function proposeConstraints(envelope: PlanCraftEnvelope): Promise<PlanCraf
 
   if (missing) {
     try {
-      const interaction = await withTimeout(
-        gemini().interactions.create({
-          model: GEMINI_MODEL,
-          system_instruction: PLAN_CRAFT.constraintsPrompt(envelope),
-          input: PLAN_CRAFT.constraintsUserPrompt(envelope),
+      const turn = await withTimeout(
+        architect.run({
+          system: PLAN_CRAFT.constraintsPrompt(envelope),
+          user: PLAN_CRAFT.constraintsUserPrompt(envelope),
           tools: [PLAN_CRAFT.constraintsTool],
         }),
-        AI_TIMEOUT_MS,
+        architect.timeoutMs,
       );
-      const call = interaction.steps.find(isFunctionCall);
-      if (call && call.name === "propose_constraints") {
+      const call = turn.calls.find((candidate) => candidate.name === "propose_constraints");
+      if (call && !call.malformed) {
         const outcome = validateProposedConstraints(call.arguments);
         if (outcome.ok) proposed = outcome.value;
       }
@@ -135,44 +115,51 @@ function applyResult(draft: Draft, result: PlanCraftResult): void {
   }
 }
 
-function runCall(call: FunctionCall, draft: Draft, context: PlanCraftContext, repairs: string[]): CallOutcome {
+/**
+ * Runs one tool call: the model gets the answer, and the plan grows when the
+ * call is usable.
+ */
+function runCall(call: ArchitectCall, draft: Draft, context: PlanCraftContext, repairs: string[]): ArchitectResult {
   const name = call.name as PlanCraftToolName;
   if (!(name in PLAN_CRAFT_ARG_SCHEMAS)) {
     return {
-      ok: false,
-      result: {
-        type: "function_result",
-        call_id: call.id,
-        name: call.name,
-        result: `Không có tool tên "${call.name}". Chỉ dùng: ${Object.keys(PLAN_CRAFT_ARG_SCHEMAS).join(", ")}.`,
-        is_error: true,
-      },
+      callId: call.id,
+      name: call.name,
+      content: `Không có tool tên "${call.name}". Chỉ dùng: ${Object.keys(PLAN_CRAFT_ARG_SCHEMAS).join(", ")}.`,
+      isError: true,
+    };
+  }
+
+  if (call.malformed) {
+    return {
+      callId: call.id,
+      name: call.name,
+      content: `Lỗi: arguments của tool "${call.name}" không phải JSON hợp lệ. Gọi lại tool này với JSON đúng cú pháp.`,
+      isError: true,
     };
   }
 
   const outcome = PLAN_CRAFT.validate(name, call.arguments, context);
   if (!outcome.ok) {
     return {
-      ok: false,
-      result: {
-        type: "function_result",
-        call_id: call.id,
-        name: call.name,
-        result: `Lỗi: ${outcome.error}. Gọi lại tool này với đối số đã sửa.`,
-        is_error: true,
-      },
+      callId: call.id,
+      name: call.name,
+      content: `Lỗi: ${outcome.error}. Gọi lại tool này với đối số đã sửa.`,
+      isError: true,
     };
   }
 
   applyResult(draft, outcome.result);
   repairs.push(...outcome.repairs);
-  return {
-    ok: true,
-    result: { type: "function_result", call_id: call.id, name: call.name, result: "Đã áp dụng." },
-  };
+  return { callId: call.id, name: call.name, content: "Đã áp dụng.", isError: false };
 }
 
-function buildBlueprint(draft: Draft, envelope: PlanCraftEnvelope, constraints: PlanCraftConstraints): Blueprint {
+function buildBlueprint(
+  draft: Draft,
+  envelope: PlanCraftEnvelope,
+  constraints: PlanCraftConstraints,
+  architect: Architect,
+): Blueprint {
   const meta = draft.meta ?? {
     name: "Kế hoạch hành động",
     summary: `Kế hoạch ${constraints.totalDays} ngày dựng từ ý tưởng: "${envelope.prompt.slice(0, 160)}"`,
@@ -208,7 +195,7 @@ function buildBlueprint(draft: Draft, envelope: PlanCraftEnvelope, constraints: 
     checkpointCount: 0,
     iotSuggested: meta.iotSuggested,
     engine: "ai",
-    model: GEMINI_MODEL,
+    model: architect.model,
     generatedAt: new Date().toISOString(),
   });
 }
@@ -220,9 +207,11 @@ function buildBlueprint(draft: Draft, envelope: PlanCraftEnvelope, constraints: 
  * one planning turn: the model calls the plan-craft tools in parallel and the
  * server executes them. When a call is unusable the model gets the error back
  * and may re-emit it — one extra turn, and only when it is needed.
+ *
+ * The architect is the only thing that knows which model is answering.
  */
-export async function craftPlan(envelope: PlanCraftEnvelope): Promise<CraftResult> {
-  const constraints = await proposeConstraints(envelope);
+export async function craftPlan(envelope: PlanCraftEnvelope, architect: Architect): Promise<CraftResult> {
+  const constraints = await proposeConstraints(envelope, architect);
   const context: PlanCraftContext = {
     totalDays: constraints.totalDays,
     dailyMinutes: constraints.dailyMinutes,
@@ -232,36 +221,36 @@ export async function craftPlan(envelope: PlanCraftEnvelope): Promise<CraftResul
   const repairs: string[] = [];
 
   const first = await withTimeout(
-    gemini().interactions.create({
-      model: GEMINI_MODEL,
-      system_instruction: PLAN_CRAFT.systemPrompt(constraints),
-      input: PLAN_CRAFT.userPrompt(envelope.prompt, constraints),
+    architect.run({
+      system: PLAN_CRAFT.systemPrompt(constraints),
+      user: PLAN_CRAFT.userPrompt(envelope.prompt, constraints),
       tools: PLAN_CRAFT.tools,
     }),
-    AI_TIMEOUT_MS,
+    architect.timeoutMs,
   );
 
-  const calls = first.steps.filter(isFunctionCall);
+  const calls = first.calls;
   if (calls.length === 0) throw new Error("The model did not use the plan tools");
 
-  const outcomes = calls.map((call) => runCall(call, draft, context, repairs));
+  const results = calls.map((call) => runCall(call, draft, context, repairs));
 
   // Only a rejected call is worth another turn.
-  if (outcomes.some((outcome) => !outcome.ok) && first.id) {
+  if (results.some((result) => result.isError)) {
     const second = await withTimeout(
-      gemini().interactions.create({
-        model: GEMINI_MODEL,
-        previous_interaction_id: first.id,
-        system_instruction: PLAN_CRAFT.systemPrompt(constraints),
-        input: outcomes.map((outcome) => outcome.result),
+      architect.run({
+        system: PLAN_CRAFT.systemPrompt(constraints),
+        user: PLAN_CRAFT.userPrompt(envelope.prompt, constraints),
         tools: PLAN_CRAFT.tools,
+        calls,
+        results,
+        handle: first.handle ?? null,
       }),
-      AI_TIMEOUT_MS,
+      architect.timeoutMs,
     );
-    for (const call of second.steps.filter(isFunctionCall)) {
+    for (const call of second.calls) {
       runCall(call, draft, context, repairs);
     }
   }
 
-  return { blueprint: buildBlueprint(draft, envelope, constraints), constraints, repairs };
+  return { blueprint: buildBlueprint(draft, envelope, constraints, architect), constraints, repairs };
 }

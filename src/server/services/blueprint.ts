@@ -2,7 +2,7 @@ import "server-only";
 
 import { and, eq, ne } from "drizzle-orm";
 import { cache } from "react";
-import { dayRangeLabel, normalizeBlueprint, phaseRanges, resolveParams } from "@/lib/blueprint";
+import { dayRangeLabel, mockPlanSchema, normalizeBlueprint, phaseRanges, resolveParams } from "@/lib/blueprint";
 import { isoDateInTz } from "@/lib/day";
 import type { BlueprintOp } from "@/lib/plan-ops";
 import { applyBlueprintOps } from "@/lib/plan-ops";
@@ -14,11 +14,13 @@ import type {
   BlueprintInput,
   BlueprintItem,
   BlueprintNode,
+  BlueprintProvider,
   BlueprintSupply,
 } from "@/lib/types";
-import { NotFoundError } from "../auth";
-import { hasGeminiKey } from "../ai/client";
+import { AiUnavailableError, NotFoundError } from "../auth";
+import { architectFor, planEngines } from "../ai/architects";
 import { craftPlan } from "../ai/plan-craft";
+import { debugEnabled, finishDebugRun, recordTurns, startDebugRun } from "../debug";
 import { BLUEPRINT_TEMPLATES, FALLBACK_TEMPLATE, type BlueprintTemplate, type TemplateSupply } from "../blueprint-templates";
 import { readBlueprintId } from "../blueprint-cookie";
 import { db } from "../db";
@@ -229,26 +231,55 @@ export function resolveIotEnabled(input: BlueprintInput, blueprint: Blueprint): 
  * The model crafts it; when it is unavailable (no key, timeout, unusable
  * answer) the template engine covers for it. Either way the plan has the
  * same shape, so the rest of the app never has to care.
+ *
+ * The engines are tried in the order `AI_PLAN_ENGINE` lists them, so a dev
+ * machine can run the local model first and fall back to the hosted one.
+ *
+ * When the caller names a `provider` there is no fallback: if that model
+ * cannot build the plan the call fails, so the user decides what to try next.
  */
 export async function generateBlueprint(
   input: BlueprintInput,
+  provider?: BlueprintProvider,
 ): Promise<{ blueprint: Blueprint; constraints: BlueprintConstraints }> {
-  const engine = process.env.AI_PLAN_ENGINE ?? "gemini";
-  if (engine === "gemini" && hasGeminiKey()) {
+  for (const engine of provider ? [provider] : planEngines()) {
+    if (engine === "template") continue;
+    const architect = architectFor(engine);
+    if (!architect) {
+      if (provider) throw new AiUnavailableError(`${provider} is not configured`);
+      continue;
+    }
+    const run = startDebugRun(architect, input.prompt);
     try {
-      const { blueprint, constraints } = await craftPlan({
-        prompt: input.prompt,
-        totalDays: input.totalDays,
-        dailyMinutes: input.dailyMinutes,
-        budgetVnd: input.budgetVnd,
-        experience: input.experience,
-      });
+      const { blueprint, constraints, repairs } = await craftPlan(
+        {
+          prompt: input.prompt,
+          totalDays: input.totalDays,
+          dailyMinutes: input.dailyMinutes,
+          budgetVnd: input.budgetVnd,
+          experience: input.experience,
+        },
+        recordTurns(architect, run),
+      );
+      finishDebugRun(run, { repairs });
       return { blueprint, constraints };
     } catch (error) {
-      console.error("plan-craft failed, using the template engine instead", error);
+      finishDebugRun(run, { error });
+      console.error(`plan-craft failed on the "${engine}" engine${provider ? "" : ", trying the next one"}`, error);
+      if (provider) {
+        throw new AiUnavailableError(error instanceof Error ? error.message : `${provider} failed`);
+      }
     }
   }
   return { blueprint: generateTemplateBlueprint(input), constraints: resolveParams(input) };
+}
+
+/** Debug only: the plan the caller supplied, normalised like a model's plan, without asking any model. */
+export function mockBlueprint(input: BlueprintInput, mock: Record<string, unknown>) {
+  if (!debugEnabled()) throw new AiUnavailableError("Mocked plans are only available in debug mode");
+  const parsed = mockPlanSchema.parse(mock) as unknown as Blueprint;
+  const blueprint = normalizeBlueprint({ ...parsed, engine: "ai", model: parsed.model ?? "mock" });
+  return { blueprint, constraints: resolveParams({ ...input, totalDays: blueprint.totalDays, dailyMinutes: blueprint.dailyMinutes, budgetVnd: blueprint.budgetVnd }) };
 }
 
 /* ------------------------------------------------------------------ *
@@ -442,19 +473,23 @@ export async function createProject(
       shoppingByDay.set(supply.buyByDay, bucket);
     }
 
-    const insertedSteps = await tx
-      .insert(steps)
-      .values(
-        stepRows.map(({ day, position, item }) => ({
-          dayPlanId: dayPlanByDay.get(day)!.id,
-          position,
-          title: stripStepPrefix(item.title),
-          description: item.description,
-          estimatedMinutes: item.minutes,
-          requiresPhoto: item.requiresPhoto,
-        })),
-      )
-      .returning();
+    // A plan may have no action items at all; an empty insert is an error.
+    const insertedSteps =
+      stepRows.length === 0
+        ? []
+        : await tx
+            .insert(steps)
+            .values(
+              stepRows.map(({ day, position, item }) => ({
+                dayPlanId: dayPlanByDay.get(day)!.id,
+                position,
+                title: stripStepPrefix(item.title),
+                description: item.description,
+                estimatedMinutes: item.minutes,
+                requiresPhoto: item.requiresPhoto,
+              })),
+            )
+            .returning();
 
     const checklist = stepRows.flatMap(({ day, position, item }) => {
       if (item.checklist.length === 0) return [];
@@ -483,17 +518,23 @@ export async function createProject(
       });
     }
 
-    await tx.insert(supplies).values(
-      blueprint.supplies.map((item, index) => ({
-        dayPlanId: dayPlanByDay.get(item.buyByDay)!.id,
-        name: item.name,
-        icon: SUPPLY_ICONS[(index + item.buyByDay) % SUPPLY_ICONS.length]!,
-        quantity: "x1",
-        available: ownedSupplies.includes(item.name),
-        unitPriceVnd: item.priceVnd,
-        buyByDay: item.buyByDay,
-      })),
-    );
+    // A plan may have no bill of materials (the model left it out).
+    const supplyRows = blueprint.supplies.flatMap((item, index) => {
+      const dayPlan = dayPlanByDay.get(item.buyByDay);
+      if (!dayPlan) return [];
+      return [
+        {
+          dayPlanId: dayPlan.id,
+          name: item.name,
+          icon: SUPPLY_ICONS[(index + item.buyByDay) % SUPPLY_ICONS.length]!,
+          quantity: "x1",
+          available: ownedSupplies.includes(item.name),
+          unitPriceVnd: item.priceVnd,
+          buyByDay: item.buyByDay,
+        },
+      ];
+    });
+    if (supplyRows.length > 0) await tx.insert(supplies).values(supplyRows);
 
     const milestoneDrafts: MilestoneDraft[] = [];
     for (const node of blueprint.nodes) {

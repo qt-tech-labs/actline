@@ -235,6 +235,8 @@ export type BlueprintInput = BlueprintParams & {
   iotEnabled: boolean | null;
 };
 
+export type BlueprintProvider = "gemini" | "openrouter" | "local";
+
 export type BlueprintTag = {
   icon: string;
   label: string;

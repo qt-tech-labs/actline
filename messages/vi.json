@@ -269,7 +269,8 @@
         "conflict": "Dữ liệu xung đột với phiên hiện tại.",
         "internal": "Máy chủ gặp lỗi. Vui lòng thử lại sau.",
         "network": "Không kết nối được tới máy chủ. Kiểm tra mạng rồi thử lại.",
-        "unknown": "Đã xảy ra lỗi không mong muốn."
+        "unknown": "Đã xảy ra lỗi không mong muốn.",
+        "ai_failed": "Mô hình đã chọn không dựng được kế hoạch. Hãy thử lại hoặc đổi mô hình."
       }
     },
     "headline": "Biến ý tưởng thành kế hoạch hành động thực tế",
@@ -277,6 +278,12 @@
     "promptLabel": "Ý tưởng dự án",
     "promptPlaceholder": "Ví dụ: Tôi muốn trồng 5 gốc dưa leo baby leo giàn ở ban công hướng Đông 3m², thu hoạch sau 45 ngày với ngân sách tiết kiệm nhất...",
     "knowledge": "Bạn không cần biết trước phải làm gì — AI sẽ bóc tách lộ trình từ ý tưởng của bạn.",
+    "modelLabel": "Mô hình AI",
+    "models": {
+      "gemini": "Gemini",
+      "openrouter": "OpenRouter (Flint)",
+      "local": "Llama (cục bộ)"
+    },
     "generate": "Khởi tạo kế hoạch hành động với AI",
     "generating": "Đang phân tích ý tưởng…",
     "stale": "Ý tưởng đã thay đổi — nhấn “Khởi tạo kế hoạch hành động với AI” để dựng lại bản phác thảo.",
@@ -353,6 +360,11 @@
         "title": "Chưa có kế hoạch",
         "hint": "Nhập ý tưởng của bạn ở ô phía trên rồi nhấn “Khởi tạo kế hoạch hành động với AI”. Kế hoạch sẽ được dựng mới hoàn toàn từ ý tưởng và các thông số bạn chọn."
       },
+      "crafting": {
+        "state": "Đang soạn kế hoạch mới",
+        "title": "Đang dựng kế hoạch mới…",
+        "hint": "Bản phác thảo cũ đã dọn khỏi màn hình. Kế hoạch mới sẽ hiện ở đây ngay khi AI phản hồi."
+      },
       "day": {
         "title": "Kế hoạch theo ngày ({total} ngày)",
         "list": "Danh sách ngày",
@@ -413,6 +425,21 @@
       "refine": "Chỉnh sửa tinh chỉnh",
       "start": "Bắt đầu dự án ngay hôm nay",
       "starting": "Đang khởi tạo dự án…"
+    },
+    "status": {
+      "generating": "Đang nhờ {model} dựng kế hoạch…",
+      "done": "Do {model} dựng trong {seconds} giây",
+      "template": "{provider} không phản hồi — đang hiển thị mẫu dựng sẵn ({seconds} giây)"
+    },
+    "toasts": {
+      "generated": "Kế hoạch đã sẵn sàng",
+      "generatedDetail": "Do {model} dựng trong {seconds} giây.",
+      "fallback": "Đang hiển thị mẫu dựng sẵn",
+      "fallbackDetail": "{provider} không phản hồi nên kế hoạch này không do AI lập.",
+      "draftSaved": "Đã lưu bản nháp",
+      "reset": "Đã xoá bản phác thảo",
+      "providerFailed": "{provider} không dựng được kế hoạch",
+      "tryWith": "Thử với {provider}"
     }
   },
   "hubSettings": {

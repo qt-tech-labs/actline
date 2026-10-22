@@ -1,7 +1,7 @@
 import "server-only";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { ConflictError, getCurrentUser, NotFoundError, UnauthorizedError } from "./auth";
+import { AiUnavailableError, ConflictError, getCurrentUser, NotFoundError, UnauthorizedError } from "./auth";
 
 type Ctx<P> = { params: Promise<P> };
 type User = Awaited<ReturnType<typeof getCurrentUser>>;
@@ -22,6 +22,7 @@ export function route<P = Record<string, never>>(
     } catch (e) {
       if (e instanceof UnauthorizedError) return fail(401, "unauthorized", e.message);
       if (e instanceof NotFoundError) return fail(404, "not_found", e.message);
+      if (e instanceof AiUnavailableError) return fail(502, "ai_failed", e.message);
       if (e instanceof ConflictError) return fail(409, "conflict", e.message);
       if (e instanceof z.ZodError) return fail(422, "validation_failed", z.prettifyError(e));
       if (e instanceof SyntaxError) return fail(400, "invalid_json", "Request body must be valid JSON");

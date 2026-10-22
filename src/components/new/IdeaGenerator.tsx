@@ -1,17 +1,54 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
-import { FALLBACK_PARAMS, SUGGESTIONS } from "@/lib/blueprint";
+import { FALLBACK_PARAMS, PLAN_PROVIDERS, SUGGESTIONS } from "@/lib/blueprint";
 import type { BlueprintExperience } from "@/lib/types";
 import { ParamKnob } from "./ParamKnob";
 import { useNewProject } from "./NewProjectProvider";
+
+/** Whole seconds since `since`, ticking once a second. */
+function Elapsed({ since }: { since: number }) {
+  const [now, setNow] = useState(since);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return <>{Math.max(0, Math.round((now - since) / 1000))}</>;
+}
+
+/** What the studio is doing right now, or how the last run ended. */
+function PlanStatus() {
+  const t = useTranslations("newProject");
+  const { provider, generatingSince, lastRun } = useNewProject();
+
+  if (generatingSince !== null) {
+    return (
+      <p role="status" className="flex items-center gap-2 text-body-sm text-primary">
+        <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        <span>
+          {t("status.generating", { model: t(`models.${provider}`) })} <Elapsed since={generatingSince} />s
+        </span>
+      </p>
+    );
+  }
+  if (!lastRun) return null;
+  return (
+    <p role="status" className={`flex items-center gap-2 text-body-sm ${lastRun.engine === "ai" ? "text-primary" : "text-secondary"}`}>
+      <Icon name={lastRun.engine === "ai" ? "check_circle" : "warning"} fill className="text-[16px]" />
+      {lastRun.engine === "ai"
+        ? t("status.done", { model: lastRun.model ?? t(`models.${lastRun.provider}`), seconds: lastRun.seconds })
+        : t("status.template", { provider: t(`models.${lastRun.provider}`), seconds: lastRun.seconds })}
+    </p>
+  );
+}
 
 /** Section 1 — the AI idea generator: free text, sample plans and the planning knobs. */
 export function IdeaGenerator() {
   const t = useTranslations("newProject");
   const format = useFormatter();
-  const { prompt, params, setPrompt, setParams, generate, busy, dirty, suggestion } = useNewProject();
+  const { prompt, params, provider, setProvider, setPrompt, setParams, generate, busy, dirty, suggestion } = useNewProject();
   const generating = busy === "generate";
 
   return (
@@ -45,18 +82,44 @@ export function IdeaGenerator() {
               <Icon name="tips_and_updates" className="text-[14px] text-primary" />
               <span className="font-mono text-label-sm text-outline">{t("knowledge")}</span>
             </p>
-            <button
-              type="button"
-              onClick={generate}
-              disabled={generating || prompt.trim().length < 8}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-title-sm text-on-primary shadow-sm interactive hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Icon name="smart_toy" className="text-[18px]" />
-              {generating ? t("generating") : t("generate")}
-              <Icon name="arrow_forward" className="ml-0.5 text-[16px]" />
-            </button>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="plan-provider" className="text-label-sm text-on-surface-variant">
+                  {t("modelLabel")}
+                </label>
+                <select
+                  id="plan-provider"
+                  value={provider}
+                  disabled={generating}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    const next = PLAN_PROVIDERS.find((name) => name === value);
+                    if (next) setProvider(next);
+                  }}
+                  className="min-w-40 rounded-lg border border-surface-variant bg-surface px-3 py-2.5 text-body-sm font-medium text-on-surface focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {PLAN_PROVIDERS.map((name) => (
+                    <option key={name} value={name}>
+                      {t(`models.${name}`)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={() => void generate()}
+                disabled={generating || prompt.trim().length < 8}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-title-sm text-on-primary shadow-sm interactive hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Icon name="smart_toy" className="text-[18px]" />
+                {generating ? t("generating") : t("generate")}
+                <Icon name="arrow_forward" className="ml-0.5 text-[16px]" />
+              </button>
+            </div>
           </div>
         </div>
+
+        <PlanStatus />
 
         {dirty && !generating ? <p className="text-body-sm text-secondary">{t("stale")}</p> : null}
 

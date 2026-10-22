@@ -3,6 +3,7 @@ import { JetBrains_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { ViewerTimezone } from "@/components/layout/ViewerTimezone";
+import { ToastProvider } from "@/components/ui/Toaster";
 import { ICON_FONT_HREF } from "@/lib/icons";
 import "./globals.css";
 
@@ -36,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-screen flex-col bg-surface text-on-surface antialiased">
         <NextIntlClientProvider messages={clientMessages}>
           <ViewerTimezone />
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </NextIntlClientProvider>
       </body>
     </html>

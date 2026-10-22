@@ -18,13 +18,26 @@ Product: `doc/requirement.md`. Architecture: `doc/architecture.md`. More detail:
 ## Setup
 
 ```bash
-cp .env.example .env.local   # DATABASE_URL, DEMO_USER_EMAIL, GEMINI_API_KEY, GEMINI_MODEL, AI_PLAN_ENGINE, AI_TIMEOUT_MS
+cp .env.example .env.local   # DATABASE_URL, DEMO_USER_EMAIL, GEMINI_API_KEY, GEMINI_MODEL, AI_PLAN_ENGINE, AI_TIMEOUT_MS, LOCAL_AI_*
 npm install
 npm run db:up                # Docker Postgres 17 on :5432 (needs a working Docker)
 npm run db:migrate           # apply drizzle/*.sql
 npm run db:seed              # demo user + demo projects
 npm run dev
 ```
+
+**A local model instead of Gemini.** Point the app at a model server that speaks the OpenAI API
+(llama.cpp does):
+
+```bash
+AI_PLAN_ENGINE=local
+LOCAL_AI_BASE_URL=http://localhost:9931/v1   # the API root
+LOCAL_AI_MODEL=ggml-org/gpt-oss-20b-GGUF:MXFP4
+```
+
+`AI_PLAN_ENGINE` also takes a list — `local,gemini` tries the local model first and falls back to
+the hosted one. The local server needs a context big enough for the whole plan (the system prompt
+plus a plan of 6-10 nodes): `--ctx-size 16384` is a good floor, 4096 is not.
 
 **`npm run db:seed` is destructive.** It deletes the demo user, which cascades to every project that
 user owns — including projects you created in the app. Use it to get a clean demo state; it is not a
@@ -80,6 +93,15 @@ the business logic and talk to Drizzle (`src/server/db`).
 The plan is a **tree**: a blueprint holds **nodes** (a range of days + one objective) and every node
 holds **items** (one action item, pinned to a day). A day with no item is a valid state.
 
+- **The app never talks to a model vendor.** `src/server/ai/architect.ts` is the interface: an
+  `Architect` runs one turn with a system prompt, a user turn and a tool list, and answers with the
+  tool calls the model made. Everything else — the prompts, the tools, the validation, the repair
+  turn — belongs to the plan-craft skill and is shared by every engine.
+- **The engines are implementations** (`src/server/ai/architects/`): `gemini.ts` (the hosted API,
+  the conversation lives on its side) and `local.ts` (any server that speaks the OpenAI Responses
+  API — llama.cpp does — with the whole turn replayed). A new engine is one file plus one line in
+  `architects/index.ts`. `AI_PLAN_ENGINE` picks the engine, or a list (`local,gemini`) to try in
+  order; `template` always uses the deterministic engine.
 - The model crafts the plan by calling five tools (`create_node`, `add_supply`, `add_risk`,
   `add_device`, `finalize_plan`) in **one turn**. The server validates and repairs every call; a
   rejected call gets an error back and may be re-emitted in a second turn. The rules live in
@@ -97,7 +119,8 @@ holds **items** (one action item, pinned to a day). A day with no item is a vali
   or an unusable answer falls back to it. The blueprint carries `engine: "ai" | "template"` and the UI
   shows which one produced the plan — keep that honest.
 - `GEMINI_BASE_URL` points the Gemini client at another endpoint, so the whole pipeline (request
-  shape, tool loop, repairs, fallback) can be exercised without a real key.
+  shape, tool loop, repairs, fallback) can be exercised without a real key. `LOCAL_AI_BASE_URL` does
+  the same for a local model server.
 
 ## Dates and timezones
 

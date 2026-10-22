@@ -5,6 +5,8 @@ import { db } from "./db";
 export class UnauthorizedError extends Error {}
 export class NotFoundError extends Error {}
 export class ConflictError extends Error {}
+/** The model the user picked could not build the plan. */
+export class AiUnavailableError extends Error {}
 
 /**
  * Single seam for identity. Until real auth exists this resolves the seeded demo user.

@@ -269,7 +269,8 @@
         "conflict": "Data conflicts with current session.",
         "internal": "Server error. Please try again later.",
         "network": "Cannot connect to server. Check your network and try again.",
-        "unknown": "An unexpected error occurred."
+        "unknown": "An unexpected error occurred.",
+        "ai_failed": "The selected model couldn't build the plan. Try again or switch model."
       }
     },
     "headline": "Turn ideas into actionable, realistic plans",
@@ -277,6 +278,12 @@
     "promptLabel": "Project idea",
     "promptPlaceholder": "e.g. I want to grow 5 cherry tomato plants on a 3m² east-facing balcony, harvest in 45 days with minimal budget...",
     "knowledge": "No prior knowledge needed — AI will extract the plan from your idea.",
+    "modelLabel": "AI model",
+    "models": {
+      "gemini": "Gemini",
+      "openrouter": "OpenRouter (Flint)",
+      "local": "Llama (local)"
+    },
     "generate": "Generate action plan with AI",
     "generating": "Analyzing idea…",
     "stale": "Idea changed — click \"Generate action plan with AI\" to rebuild the draft.",
@@ -353,6 +360,11 @@
         "title": "No plan yet",
         "hint": "Enter your idea above and click \"Generate action plan with AI\". A plan will be built from your idea and selected parameters."
       },
+      "crafting": {
+        "state": "Crafting a new plan",
+        "title": "Crafting your new plan…",
+        "hint": "The previous draft is out of view. The fresh plan appears here as soon as the model responds."
+      },
       "day": {
         "title": "Day by day plan ({total} days)",
         "list": "Day list",
@@ -413,6 +425,21 @@
       "refine": "Refine",
       "start": "Start project today",
       "starting": "Initializing project…"
+    },
+    "status": {
+      "generating": "Asking {model} to build the plan…",
+      "done": "Built by {model} in {seconds}s",
+      "template": "{provider} didn't answer — prebuilt template shown ({seconds}s)"
+    },
+    "toasts": {
+      "generated": "Plan ready",
+      "generatedDetail": "Built by {model} in {seconds}s.",
+      "fallback": "Showing a prebuilt template",
+      "fallbackDetail": "{provider} didn't respond, so this plan is not AI-generated.",
+      "draftSaved": "Draft saved",
+      "reset": "Draft cleared",
+      "providerFailed": "{provider} couldn't build the plan",
+      "tryWith": "Try with {provider}"
     }
   },
   "hubSettings": {

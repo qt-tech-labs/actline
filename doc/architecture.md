@@ -125,6 +125,14 @@ and the persistent action bar.
   executes them against a draft, repairs what it can (day ranges, minutes, icons, prices) and only
   asks the model again when a call is genuinely unusable. The rules live in
   `src/server/ai/skills/plan-craft/SKILL.md` and are enforced by `validate.ts`.
+- **The app does not talk to a model vendor.** `src/server/ai/architect.ts` defines the `Architect`
+  interface — one turn in (system prompt, user turn, tools), the tool calls out. The skill owns the
+  prompts, the tools, the validation and the repair turn, so they are shared by every engine. The
+  engines live in `src/server/ai/architects/`: `gemini.ts` (the hosted API keeps the conversation,
+  so a follow-up points back at the previous interaction) and `local.ts` (any server that speaks the
+  OpenAI Responses API — llama.cpp does — with the whole turn replayed, because such a server keeps
+  no memory). `AI_PLAN_ENGINE` picks the engine, or a list (`local,gemini`) to try in order; a new
+  engine is one implementation plus one line in `architects/index.ts`.
 - **The template engine is the fallback** (`server/blueprint-templates.ts`): no API key, a timeout or
   an unusable answer falls back to a deterministic plan in the same shape. `AI_PLAN_ENGINE=template`
   forces it.

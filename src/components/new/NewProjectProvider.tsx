@@ -1,10 +1,14 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { readDebugMock } from "@/lib/debug-mock";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useToast } from "@/components/ui/Toaster";
+import { PLAN_PROVIDERS } from "@/lib/blueprint";
 import { api, apiErrorCode, apiErrorDetail } from "@/lib/api-client";
 import type { BlueprintOp } from "@/lib/plan-ops";
-import type { BlueprintConstraints, BlueprintInput, BlueprintParams } from "@/lib/types";
+import type { Blueprint, BlueprintConstraints, BlueprintInput, BlueprintParams, BlueprintProvider } from "@/lib/types";
 
 type Busy = "generate" | "draft" | "start" | "reset" | null;
 
@@ -29,9 +33,19 @@ export type PlanError = {
   detail: string | null;
 };
 
+/** The outcome of the last plan generation, for the status label. */
+export type GenerationRun = {
+  provider: BlueprintProvider;
+  /** "ai" when the model answered, "template" when the fallback did. */
+  engine: Blueprint["engine"];
+  model: string | null;
+  seconds: number;
+};
+
 type NewProjectState = {
   prompt: string;
   params: BlueprintParams;
+  provider: BlueprintProvider;
   /** `null` = follow the engine suggestion. */
   iotEnabled: boolean | null;
   /** BOM items the user already owns. */
@@ -42,11 +56,12 @@ type NewProjectState = {
   suggestion: BlueprintConstraints | null;
   setPrompt: (prompt: string) => void;
   setParams: (params: BlueprintParams) => void;
+  setProvider: (provider: BlueprintProvider) => void;
   setIotEnabled: (iotEnabled: boolean) => void;
   toggleOwned: (name: string) => void;
   setOwnedAll: (names: string[], owned: boolean) => void;
   /** Rebuilds the blueprint from the current form values. */
-  generate: () => Promise<void>;
+  generate: (provider?: BlueprintProvider) => Promise<void>;
   /** Keeps the current plan as a draft on this device. */
   saveDraft: () => Promise<void>;
   /** Applies hand edits to the plan (add, edit or remove a node or an action item). */
@@ -56,6 +71,12 @@ type NewProjectState = {
   /** Creates the project and opens it. */
   start: () => Promise<void>;
   busy: Busy;
+  /** True while an action's route refresh has not landed on screen yet. */
+  syncing: boolean;
+  /** When the running generation started (ms since epoch); null when idle. */
+  generatingSince: number | null;
+  /** How the last generation ended. */
+  lastRun: GenerationRun | null;
   /** True while a hand edit is being stored. */
   editing: boolean;
   /** The last failure, if any. */
@@ -79,16 +100,23 @@ const NewProjectContext = createContext<NewProjectState | null>(null);
  */
 export function NewProjectProvider({
   initial,
+  initialProvider,
   blueprintId,
   suggestion: initialSuggestion = null,
   children,
 }: {
   initial: BlueprintInput;
+  initialProvider: BlueprintProvider;
   blueprintId: string | null;
   suggestion?: BlueprintConstraints | null;
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  // The crafting card stays up until the refreshed route replaces the stale
+  // children — `syncing` covers the gap between the response and the refresh.
+  const [syncing, startSync] = useTransition();
+  const t = useTranslations("newProject");
+  const { toast } = useToast();
   const [prompt, setPrompt] = useState(initial.prompt);
   const [params, setParams] = useState<BlueprintParams>({
     totalDays: initial.totalDays,
@@ -96,10 +124,13 @@ export function NewProjectProvider({
     budgetVnd: initial.budgetVnd,
     experience: initial.experience,
   });
+  const [provider, setProvider] = useState<BlueprintProvider>(initialProvider);
   const [iotEnabled, setIotEnabledState] = useState<boolean | null>(initial.iotEnabled);
   const [ownedSupplies, setOwnedSupplies] = useState<string[]>([]);
   const [suggestion, setSuggestion] = useState<BlueprintConstraints | null>(initialSuggestion);
   const [busy, setBusy] = useState<Busy>(null);
+  const [generatingSince, setGeneratingSince] = useState<number | null>(null);
+  const [lastRun, setLastRun] = useState<GenerationRun | null>(null);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<PlanError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -112,38 +143,92 @@ export function NewProjectProvider({
   );
 
   const fail = useCallback((action: PlanAction, cause: unknown) => {
-    setError({ action, code: apiErrorCode(cause), detail: apiErrorDetail(cause) });
-  }, []);
+    const code = apiErrorCode(cause);
+    setError({ action, code, detail: apiErrorDetail(cause) });
+    toast("error", t(`errors.${action}`), t(`errors.reason.${code}`));
+  }, [t, toast]);
 
-  const generate = useCallback(async () => {
+  // The failure toast offers the other model and needs the latest `generate`.
+  const generateRef = useRef<(provider?: BlueprintProvider) => Promise<void>>(async () => {});
+
+  const generate = useCallback(async (override?: BlueprintProvider) => {
+    const chosen = override ?? provider;
+    // Debug drawer: a mocked plan stands in for the model.
+    const mock = readDebugMock();
+    if (mock && "error" in mock) {
+      toast("error", "The mocked plan can't be used", mock.error);
+      return;
+    }
+    if (chosen !== provider) setProvider(chosen);
     setBusy("generate");
     setError(null);
     setNotice(null);
     lastAction.current = { kind: "generate" };
+    const startedAt = Date.now();
+    setGeneratingSince(startedAt);
     try {
-      const result = await api<{ constraints: BlueprintConstraints }>("/blueprints", { method: "POST", body: body() });
+      // Crafting is a fresh start: the previous draft is discarded before the
+      // run, so a failed attempt leaves an empty studio (banner + retry)
+      // instead of resurrecting the old plan. Best effort — an already-deleted
+      // draft must not block a retry; if the discard truly failed, the catch
+      // below re-syncs the studio with what the server actually holds.
+      if (blueprintId) {
+        await api(`/blueprints/${blueprintId}`, { method: "DELETE" }).catch(() => undefined);
+      }
+      const result = await api<{ constraints: BlueprintConstraints; blueprint: Blueprint }>("/blueprints", {
+        method: "POST",
+        body: { ...body(), provider: chosen, ...(mock && "plan" in mock ? { mockPlan: mock.plan } : {}) },
+      });
+      const seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+      const { engine, model } = result.blueprint;
+      setLastRun({ provider: chosen, engine, model, seconds });
       setSuggestion(result.constraints);
-      router.refresh();
+      // Keeps the crafting card over the stale children until the refreshed
+      // route commits — the old plan must not flash before the new one lands.
+      startSync(() => router.refresh());
+      if (engine === "ai") {
+        toast("success", t("toasts.generated"), t("toasts.generatedDetail", { model: model ?? "", seconds }));
+      } else {
+        toast("warning", t("toasts.fallback"), t("toasts.fallbackDetail", { provider: t(`models.${chosen}`) }));
+      }
     } catch (cause) {
-      fail("generate", cause);
+      if (apiErrorCode(cause) === "ai_failed") {
+        const other: BlueprintProvider = PLAN_PROVIDERS[(PLAN_PROVIDERS.indexOf(chosen) + 1) % PLAN_PROVIDERS.length]!;
+        setError({ action: "generate", code: "ai_failed", detail: apiErrorDetail(cause) });
+        toast("error", t("toasts.providerFailed", { provider: t(`models.${chosen}`) }), apiErrorDetail(cause) ?? undefined, {
+          label: t("toasts.tryWith", { provider: t(`models.${other}`) }),
+          onClick: () => void generateRef.current(other),
+        });
+      } else {
+        fail("generate", cause);
+      }
+      // The old draft is gone (or the discard itself failed and it is
+      // untouched) — re-render so the screen matches what the server holds.
+      startSync(() => router.refresh());
     } finally {
+      setGeneratingSince(null);
       setBusy(null);
     }
-  }, [body, fail, router]);
+  }, [body, provider, blueprintId, fail, router, startSync, t, toast]);
+
+  useEffect(() => {
+    generateRef.current = generate;
+  }, [generate]);
 
   const saveDraft = useCallback(async () => {
     setBusy("draft");
     setError(null);
     lastAction.current = { kind: "draft" };
     try {
-      await api("/blueprints", { method: "POST", body: body() });
+      await api("/blueprints", { method: "POST", body: { ...body(), provider } });
       setNotice("draft");
+      toast("success", t("toasts.draftSaved"));
     } catch (cause) {
       fail("draft", cause);
     } finally {
       setBusy(null);
     }
-  }, [body, fail]);
+  }, [body, provider, fail, t, toast]);
 
   /** Stores a batch of hand edits on the plan and re-renders it. */
   const applyOps = useCallback(
@@ -173,13 +258,15 @@ export function NewProjectProvider({
     lastAction.current = { kind: "reset" };
     try {
       await api(`/blueprints/${blueprintId}`, { method: "DELETE" });
+      setLastRun(null);
       router.refresh();
+      toast("info", t("toasts.reset"));
     } catch (cause) {
       fail("reset", cause);
     } finally {
       setBusy(null);
     }
-  }, [blueprintId, fail, router]);
+  }, [blueprintId, fail, router, t, toast]);
 
   const start = useCallback(async () => {
     setBusy("start");
@@ -205,14 +292,14 @@ export function NewProjectProvider({
       setIotEnabledState(value);
       setError(null);
       lastAction.current = { kind: "iot", value };
-      void api("/blueprints", { method: "POST", body: { ...initial, iotEnabled: value } })
+      void api("/blueprints", { method: "POST", body: { ...initial, iotEnabled: value, provider } })
         .then(() => router.refresh())
         .catch((cause: unknown) => {
           setIotEnabledState(initial.iotEnabled);
           fail("iot", cause);
         });
     },
-    [initial, fail, router],
+    [initial, provider, fail, router],
   );
 
   const retry = useCallback(async () => {
@@ -263,12 +350,14 @@ export function NewProjectProvider({
     () => ({
       prompt,
       params,
+      provider,
       iotEnabled,
       ownedSupplies,
       blueprintId,
       suggestion,
       setPrompt,
       setParams,
+      setProvider,
       setIotEnabled,
       toggleOwned,
       setOwnedAll,
@@ -278,6 +367,9 @@ export function NewProjectProvider({
       reset,
       start,
       busy,
+      syncing,
+      generatingSince,
+      lastRun,
       editing,
       error,
       retry,
@@ -288,10 +380,12 @@ export function NewProjectProvider({
     [
       prompt,
       params,
+      provider,
       iotEnabled,
       ownedSupplies,
       blueprintId,
       suggestion,
+      setProvider,
       setIotEnabled,
       toggleOwned,
       setOwnedAll,
@@ -301,6 +395,9 @@ export function NewProjectProvider({
       reset,
       start,
       busy,
+      syncing,
+      generatingSince,
+      lastRun,
       editing,
       error,
       retry,
