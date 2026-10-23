@@ -9,6 +9,7 @@ import {
   type HubSettingsDto,
   type HubSettingsInput,
   type SensorMetricName,
+  emptyHubConfig,
   maskCameraUrl,
   unmaskCameraUrl,
 } from "@/lib/hub-config";
@@ -36,7 +37,7 @@ function isOnline(hub: { online: boolean; lastSeenAt: Date | null }) {
 
 export async function getHubSettings(userId: string, projectId: string): Promise<HubSettingsDto> {
   const hub = await ownedHub(userId, projectId);
-  if (!hub.config) throw new NotFoundError("Hub has not reported its configuration yet");
+  const stored = hub.config ?? emptyHubConfig();
 
   const latest = await db
     .selectDistinctOn([sensorReadings.metric], { metric: sensorReadings.metric, value: sensorReadings.value })
@@ -48,21 +49,21 @@ export async function getHubSettings(userId: string, projectId: string): Promise
 
   return {
     hub: { id: hub.id, name: hub.name, online: isOnline(hub), lastSeenAt: hub.lastSeenAt?.toISOString() ?? null },
-    config: { ...hub.config, cameraUrl: maskCameraUrl(hub.config.cameraUrl) },
+    config: { ...stored, cameraUrl: maskCameraUrl(stored.cameraUrl) },
     readings,
   };
 }
 
 export async function updateHubSettings(userId: string, projectId: string, input: HubSettingsInput) {
   const hub = await ownedHub(userId, projectId);
-  if (!hub.config) throw new NotFoundError("Hub has not reported its configuration yet");
+  const stored = hub.config ?? emptyHubConfig();
   const config = {
-    ...hub.config,
+    ...stored,
     telemetryIntervalSec: input.telemetryIntervalSec,
     lightSleepLowBattery: input.lightSleepLowBattery,
     valveWatchdog: input.valveWatchdog,
-    mqtt: { ...hub.config.mqtt, ...input.mqtt },
-    cameraUrl: unmaskCameraUrl(input.cameraUrl, hub.config.cameraUrl),
+    mqtt: { ...stored.mqtt, ...input.mqtt },
+    cameraUrl: unmaskCameraUrl(input.cameraUrl, stored.cameraUrl),
   };
   await db.update(hubs).set({ config }).where(eq(hubs.id, hub.id));
   return getHubSettings(userId, projectId);

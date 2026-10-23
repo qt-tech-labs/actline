@@ -2,7 +2,7 @@ import "server-only";
 
 import { AsyncLocalStorage } from "node:async_hooks";
 
-import type { Architect, ArchitectCall, ArchitectRequest, ArchitectTurn } from "./ai/architect";
+import type { Architect, ArchitectRequest, ArchitectTurn } from "./ai/architect";
 
 /**
  * Debug recording of the plan studio's model traffic.
@@ -15,13 +15,18 @@ import type { Architect, ArchitectCall, ArchitectRequest, ArchitectTurn } from "
 export type DebugTurn = {
   startedAt: string;
   durationMs: number;
-  /** A follow-up turn replays the calls and the server's answers. */
+  /** A correction turn replays the model's own answer and the problems. */
   followUp: boolean;
   system: string;
   user: string;
-  toolNames: string[];
-  replayedResults: { name: string; isError: boolean; content: string }[];
-  calls: ArchitectCall[];
+  /** What the model has to fix itself (a correction turn was sent). */
+  problems: string[];
+  /** The model's text answer, engine envelopes stripped. */
+  text: string;
+  /** The JSON document extracted from the text, when there is one. */
+  json: unknown;
+  /** Why `json` is null, when it is. */
+  parseError: string | null;
   /** What was sent: the endpoint and the body, exactly as the engine built them. */
   request: { method: string; url: string; body: unknown } | null;
   /** The vendor's answer, untouched. */
@@ -125,12 +130,13 @@ export function recordTurns(architect: Architect, run: DebugRun): Architect {
       const turn: DebugTurn = {
         startedAt: new Date(startedAt).toISOString(),
         durationMs: 0,
-        followUp: Boolean(request.results?.length),
+        followUp: Boolean(request.followUp),
         system: request.system,
         user: request.user,
-        toolNames: request.tools.map((tool) => tool.name),
-        replayedResults: (request.results ?? []).map((r) => ({ name: r.name, isError: r.isError, content: r.content })),
-        calls: [],
+        problems: request.followUp?.problems ?? [],
+        text: "",
+        json: null,
+        parseError: null,
         request: null,
         raw: null,
         error: null,
@@ -139,7 +145,9 @@ export function recordTurns(architect: Architect, run: DebugRun): Architect {
       run.turns.push(turn);
       try {
         const answer = await currentTurn.run(turn, () => architect.run(request));
-        turn.calls = answer.calls;
+        turn.text = answer.text;
+        turn.json = answer.json;
+        turn.parseError = answer.parseError;
         turn.raw = answer.raw ?? null;
         return answer;
       } catch (error) {

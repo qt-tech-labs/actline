@@ -98,7 +98,7 @@ src/
     ai/
       client.ts            the Gemini client, the model, the timeout
       plan-craft.ts        the orchestrator: one planning turn, repairs, one correction turn
-      skills/              the skills: plan-craft/SKILL.md (the rules), tools.ts, validate.ts, system-prompt.ts
+      skills/              the skills: plan-craft/SKILL.md (the rules), plan-schema.ts, validate.ts, system-prompt.ts
     db/                    schema.ts, index.ts, seed.ts
     services/              projects, timeline, metrics, day, hardware, hub-config, finance, purchases,
                             clone, automation, mutations, blueprint (craft, drafts, create)
@@ -117,22 +117,25 @@ and the persistent action bar.
   days become `day_plans` (one per project day).
 - **The knobs are the AI's to choose.** `BlueprintParams` fields are `null` when the user left them
   open, because the right values depend on the topic (a three-month renovation is not a 30-day job).
-  The model proposes them with the `propose_constraints` tool in a first, small turn; the plan is
-  then built with those values. Whatever the user set by hand always wins.
+  The model proposes them inside the plan document itself (`constraints`) and plans against them in
+  the same breath, so the plan is self-consistent with the limits it invented. Whatever the user set
+  by hand always wins.
 - **The plan is crafted by the plan-craft skill** (`src/server/ai/`): the model is given the user's
-  idea plus the constraint envelope (days, minutes a day, budget, experience) and calls five tools
-  (`create_node`, `add_supply`, `add_risk`, `add_device`, `finalize_plan`) in **one turn**. The server
-  executes them against a draft, repairs what it can (day ranges, minutes, icons, prices) and only
-  asks the model again when a call is genuinely unusable. The rules live in
+  idea and answers with **one JSON document** — the proposed knobs next to the whole plan (nodes
+  with items and checkpoints, supplies, risks, devices, the plan's identity). The server validates
+  every piece and repairs what it can (day ranges, minutes, icons, prices) and only asks the model
+  again — once, with the problems — when a piece genuinely cannot be used. The rules live in
   `src/server/ai/skills/plan-craft/SKILL.md` and are enforced by `validate.ts`.
 - **The app does not talk to a model vendor.** `src/server/ai/architect.ts` defines the `Architect`
-  interface — one turn in (system prompt, user turn, tools), the tool calls out. The skill owns the
-  prompts, the tools, the validation and the repair turn, so they are shared by every engine. The
+  interface — one turn in (system prompt, user turn), one JSON document out, with the extraction
+  from prose and a single correction turn for unusable answers. The skill owns the prompts, the
+  document schema, the validation and the correction turn, so they are shared by every engine. The
   engines live in `src/server/ai/architects/`: `gemini.ts` (the hosted API keeps the conversation,
-  so a follow-up points back at the previous interaction) and `local.ts` (any server that speaks the
-  OpenAI Responses API — llama.cpp does — with the whole turn replayed, because such a server keeps
-  no memory). `AI_PLAN_ENGINE` picks the engine, or a list (`local,gemini`) to try in order; a new
-  engine is one implementation plus one line in `architects/index.ts`.
+  so a correction points back at the previous interaction), `openrouter.ts` and `local.ts` (any
+  server that speaks the OpenAI Responses API — llama.cpp does — with the whole exchange replayed,
+  because such a server keeps no memory). `AI_PLAN_ENGINE` picks the engine, or a list
+  (`local,gemini`) to try in order; a new engine is one implementation plus one line in
+  `architects/index.ts`.
 - **The template engine is the fallback** (`server/blueprint-templates.ts`): no API key, a timeout or
   an unusable answer falls back to a deterministic plan in the same shape. `AI_PLAN_ENGINE=template`
   forces it.
@@ -328,9 +331,9 @@ Checks: `npm run lint`, `npm run typecheck`, `npm run build`.
 - **New screen**: add a route in `src/app`, compose existing components, add services if data is new, add keys to `messages/`.
 - **New icon**: add its name to `src/lib/icons.ts` (also for icon names stored in the DB).
 - **Mobile app**: consume `/api/v1`; add a token strategy in `getCurrentUser()`. Consider an OpenAPI spec generated from the Zod schemas.
-- **Another skill**: add a directory under `src/server/ai/skills/` with its `SKILL.md`, its tools and
-  its validator, then register it in `skills/index.ts`. A skill owns its tools, its instruction and
-  the rules the server enforces.
+- **Another skill**: add a directory under `src/server/ai/skills/` with its `SKILL.md`, its document
+  schema and its validator, then register it in `skills/index.ts`. A skill owns its document shape,
+  its instruction and the rules the server enforces.
 - **Better prices**: the bill of materials is an estimate (`priceSource: "ai_estimate"`) until the
   user types a price (`priceSource: "user"`, never scaled down). A price catalog table with a
   `lastVerifiedAt` column, or a `search_prices` / `url_context` tool, can be layered on without
@@ -343,10 +346,10 @@ The AI part of the studio is one skill, and it is meant to be read:
 
 ```
 src/server/ai/skills/plan-craft/
-  SKILL.md          the rules, in prose: the plan shape, what is forbidden, what each tool does
+  SKILL.md          the rules, in prose: the plan shape, what is forbidden, what the document holds
   system-prompt.ts  the system instruction, built from the rules and the constraint envelope
-  tools.ts          the five tools: the JSON Schema the model reads and the Zod schema the server parses
-  validate.ts       the checks: what is repaired, what is rejected
+  plan-schema.ts    the Zod schemas: the one shape the model answers with and the server parses
+  validate.ts       the checks: what is repaired, what is rejected and re-asked
 ```
 
 The flow is one turn:
@@ -355,9 +358,11 @@ The flow is one turn:
 POST /api/v1/blueprints
   └─ services/blueprint#generateBlueprint
        └─ ai/plan-craft#craftPlan
-            ├─ turn 1: the model calls the tools (in parallel)
-            ├─ the server validates, repairs and applies every call
-            └─ turn 2 (only if a call was rejected): the model gets the error and may re-emit it
+            ├─ turn 1: the model answers with one JSON document (knobs + the whole plan)
+            ├─ the server validates, repairs what it can and drops what it cannot
+            └─ turn 2 (only when pieces were unusable or cut off): the model gets
+               the problems and re-emits the whole document; the server adopts it
+               only when it is at least as complete
        └─ the plan is normalised and stored as a draft
 ```
 

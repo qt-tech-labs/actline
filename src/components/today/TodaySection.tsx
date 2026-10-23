@@ -22,10 +22,18 @@ export async function TodaySection({ projectId, day }: { projectId: string; day?
     getHardware(projectId),
   ]);
   const offline = !!hub && !hub.online;
+  const stepper = (
+    <nav aria-label={t("stepperLabel")} className="mb-space-sm flex items-center justify-between gap-2">
+      <DayStep projectId={projectId} day={selected - 1} disabled={selected <= 1} direction="prev" label={t("prevDay")} />
+      <span className="font-mono text-label-md text-on-surface-variant">{t("progress", { day: selected, total: overview.totalDays })}</span>
+      <DayStep projectId={projectId} day={selected + 1} disabled={selected >= overview.totalDays} direction="next" label={t("nextDay")} />
+    </nav>
+  );
 
   if (!plan) {
     return (
       <DayPlanFrame day={selected}>
+        {stepper}
         <Card className="p-space-xl text-center">
           <Icon name="event_busy" className="text-[32px] text-outline" />
           <h1 className="mt-2 font-display text-headline-md text-on-surface">{t("noPlanTitle", { day: selected })}</h1>
@@ -40,6 +48,7 @@ export async function TodaySection({ projectId, day }: { projectId: string; day?
 
   return (
     <DayPlanFrame day={selected}>
+      {stepper}
       <Card as="section" className="relative p-space-xl">
         <div className="mb-space-sm flex flex-wrap items-center justify-between gap-space-sm">
           <div className="flex flex-wrap items-center gap-2">
@@ -107,4 +116,12 @@ export async function TodaySection({ projectId, day }: { projectId: string; day?
       />
     </DayPlanFrame>
   );
+}
+
+function DayStep({ projectId, day, disabled, direction, label }: { projectId: string; day: number; disabled: boolean; direction: "prev" | "next"; label: string }) {
+  const cls = "interactive flex items-center gap-1 rounded-lg border border-surface-variant bg-surface px-3 py-1.5 text-body-sm font-semibold text-primary";
+  const icon = <Icon name={direction === "prev" ? "chevron_left" : "chevron_right"} className="text-[18px]" />;
+  const content = direction === "prev" ? <>{icon}{label}</> : <>{label}{icon}</>;
+  if (disabled) return <span aria-disabled="true" className={`${cls} opacity-40`}>{content}</span>;
+  return <Link href={`/?project=${projectId}&day=${day}`} scroll={false} className={`${cls} hover:bg-surface-container`}>{content}</Link>;
 }

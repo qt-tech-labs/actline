@@ -33,6 +33,13 @@
     "modeSwitch": "Đổi chế độ làm việc"
   },
   "switcher": {
+    "delete": "Xóa dự án",
+    "deleteTitle": "Xóa dự án này?",
+    "deleteBody": "“{name}” cùng toàn bộ kế hoạch, vật tư, chi phí và ghi chú sẽ bị xóa vĩnh viễn.",
+    "confirm": "Xóa",
+    "cancel": "Hủy",
+    "deleted": "Đã xóa dự án",
+    "deleteFailed": "Không xóa được dự án",
     "label": "Đổi dự án",
     "heading": "Dự án của bạn"
   },
@@ -48,6 +55,7 @@
     "connectIotHint": "Dự án này chưa dùng IoT. Bật để theo dõi cảm biến, camera và van tưới."
   },
   "timeline": {
+    "missed": "Chưa đánh dấu hoàn thành",
     "label": "Các mốc canh tác",
     "prev": "Xem các mốc trước",
     "next": "Xem các mốc sau",
@@ -130,6 +138,9 @@
     "empty": "Chưa kết nối thiết bị nào"
   },
   "day": {
+    "stepperLabel": "Đổi ngày",
+    "prevDay": "Ngày trước",
+    "nextDay": "Ngày sau",
     "progress": "{day}/{total} ngày",
     "todayLabel": "Hôm nay",
     "dayLabel": "Ngày {day}",
@@ -335,7 +346,26 @@
         "configure": "Cấu hình cảm biến",
         "enable": "Kích hoạt IoT cho dự án này",
         "suggested": "AI gợi ý bật IoT vì dự án cần theo dõi cảm biến môi trường.",
-        "notNeeded": "Dự án này không cần IoT. Bạn vẫn có thể bật sau trong màn hình dự án."
+        "notNeeded": "Dự án này không cần IoT. Bạn vẫn có thể bật sau trong màn hình dự án.",
+        "editorTitle": "Cảm biến và thiết bị của kế hoạch",
+        "addDevice": "Thêm thiết bị",
+        "editDevice": "Sửa thiết bị",
+        "deleteDevice": "Xoá thiết bị",
+        "noDevices": "Chưa có thiết bị. Hãy thêm cảm biến dự án cần.",
+        "deviceName": "Tên thiết bị",
+        "deviceRole": "Vai trò",
+        "deviceRolePlaceholder": "Ví dụ: ĐẤT RỄ",
+        "deviceProtocol": "Giao thức",
+        "deviceDetail": "Chi tiết",
+        "deviceKind": "Loại",
+        "save": "Lưu",
+        "cancel": "Huỷ",
+        "kinds": {
+          "gateway": "Gateway",
+          "soil_probe": "Cảm biến",
+          "valve": "Van",
+          "camera": "Camera"
+        }
       },
       "nodes": {
         "title": "Các Giai Đoạn Của Kế Hoạch (Plan Nodes)",
@@ -353,7 +383,8 @@
         "nodeObjective": "Mục tiêu của giai đoạn",
         "nodeObjectivePlaceholder": "Kết quả đạt được sau khi xong giai đoạn",
         "startDay": "Từ ngày",
-        "endDay": "Đến ngày"
+        "endDay": "Đến ngày",
+        "edit": "Sửa giai đoạn"
       },
       "empty": {
         "state": "Chưa có bản phác thảo",
@@ -382,7 +413,12 @@
         "itemCancel": "Huỷ",
         "needGenerate": "Nhấn “Khởi tạo kế hoạch hành động với AI” để dựng bản phác thảo rồi chỉnh sửa.",
         "itemEdit": "Sửa hành động",
-        "itemDelete": "Xoá hành động"
+        "itemDelete": "Xoá hành động",
+        "itemDescription": "Mô tả",
+        "itemChecklist": "Các bước nhỏ (mỗi dòng một bước)",
+        "itemDay": "Ngày",
+        "itemSaved": "Đã lưu hành động",
+        "noNodeToAdd": "Hãy thêm giai đoạn bao phủ ngày này trước"
       },
       "bom": {
         "title": "Vật tư cần chuẩn bị trước",

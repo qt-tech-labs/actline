@@ -57,6 +57,9 @@ type NewProjectState = {
   setPrompt: (prompt: string) => void;
   setParams: (params: BlueprintParams) => void;
   setProvider: (provider: BlueprintProvider) => void;
+  /** The plan day shown in the day browser; the phase cards and the day list both drive it. */
+  selectedDay: number;
+  selectDay: (day: number) => void;
   setIotEnabled: (iotEnabled: boolean) => void;
   toggleOwned: (name: string) => void;
   setOwnedAll: (names: string[], owned: boolean) => void;
@@ -125,6 +128,7 @@ export function NewProjectProvider({
     experience: initial.experience,
   });
   const [provider, setProvider] = useState<BlueprintProvider>(initialProvider);
+  const [selectedDay, selectDay] = useState(1);
   const [iotEnabled, setIotEnabledState] = useState<boolean | null>(initial.iotEnabled);
   const [ownedSupplies, setOwnedSupplies] = useState<string[]>([]);
   const [suggestion, setSuggestion] = useState<BlueprintConstraints | null>(initialSuggestion);
@@ -358,6 +362,8 @@ export function NewProjectProvider({
       setPrompt,
       setParams,
       setProvider,
+      selectedDay,
+      selectDay,
       setIotEnabled,
       toggleOwned,
       setOwnedAll,
@@ -386,6 +392,7 @@ export function NewProjectProvider({
       blueprintId,
       suggestion,
       setProvider,
+      selectedDay,
       setIotEnabled,
       toggleOwned,
       setOwnedAll,

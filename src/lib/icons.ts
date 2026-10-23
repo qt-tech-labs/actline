@@ -8,7 +8,7 @@ export const ICON_NAMES = [
   "auto_awesome", "autorenew",
   "battery_5_bar", "bluetooth", "brush", "build", "calendar_month", "calendar_today", "camera_alt", "check",
   "check_circle", "chevron_left", "chevron_right", "close", "cloud_off", "cloud_sync", "colorize", "content_cut",
-  "directions_run", "done_all", "eco", "delete", "error", "edit_note", "event_busy", "event_repeat", "event_upcoming",
+  "directions_run", "priority_high", "done_all", "eco", "delete", "error", "edit_note", "event_busy", "event_repeat", "event_upcoming",
   "expand_more", "file_download", "flag", "fullscreen", "handyman",
   "help_outline", "hub", "info", "humidity_mid", "inventory_2", "language", "linear_scale", "location_on", "lock_clock", "more_horiz",
   "network_ping", "neurology",

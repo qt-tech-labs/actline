@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { normalizeBlueprint } from "@/lib/blueprint";
-import type { Blueprint, BlueprintItem, BlueprintNode, BlueprintSupply } from "@/lib/types";
+import type { Blueprint, BlueprintDevice, BlueprintItem, BlueprintNode, BlueprintSupply } from "@/lib/types";
 
 /* ------------------------------------------------------------------ *
  * Hand edits on a plan.
@@ -107,6 +107,28 @@ export const deleteCheckpointOpSchema = z.object({
   label: z.string().trim().min(1).max(120),
 });
 
+const deviceFields = {
+  role: z.string().trim().min(1).max(40),
+  name: z.string().trim().min(1).max(120),
+  detail: z.string().trim().max(200).default(""),
+  protocol: z.string().trim().max(40).default(""),
+  kind: z.enum(["gateway", "soil_probe", "valve", "camera"]),
+};
+
+export const addDeviceOpSchema = z.object({ op: z.literal("addDevice"), ...deviceFields });
+
+export const updateDeviceOpSchema = z.object({
+  op: z.literal("updateDevice"),
+  index: z.number().int().min(1),
+  role: deviceFields.role.optional(),
+  name: deviceFields.name.optional(),
+  detail: deviceFields.detail.optional(),
+  protocol: deviceFields.protocol.optional(),
+  kind: deviceFields.kind.optional(),
+});
+
+export const deleteDeviceOpSchema = z.object({ op: z.literal("deleteDevice"), index: z.number().int().min(1) });
+
 export const blueprintOpSchema = z.discriminatedUnion("op", [
   addNodeOpSchema,
   updateNodeOpSchema,
@@ -119,6 +141,9 @@ export const blueprintOpSchema = z.discriminatedUnion("op", [
   deleteSupplyOpSchema,
   addCheckpointOpSchema,
   deleteCheckpointOpSchema,
+  addDeviceOpSchema,
+  updateDeviceOpSchema,
+  deleteDeviceOpSchema,
 ]);
 
 export const blueprintOpsSchema = z.object({
@@ -126,6 +151,14 @@ export const blueprintOpsSchema = z.object({
 });
 
 export type BlueprintOp = z.infer<typeof blueprintOpSchema>;
+
+/** Icons for each device family; every name is in the app's icon subset. */
+export const DEVICE_ICONS: Record<BlueprintDevice["kind"], string> = {
+  gateway: "router",
+  soil_probe: "sensors",
+  valve: "valve",
+  camera: "videocam",
+};
 
 const newId = () => `it_${crypto.randomUUID()}`;
 
@@ -253,6 +286,41 @@ export function applyBlueprintOps(plan: Blueprint, ops: BlueprintOp[]): Blueprin
           ...node,
           checkpoints: [...node.checkpoints, { day: op.day, label: op.label }],
         }));
+        break;
+      }
+      case "addDevice": {
+        const device: BlueprintDevice = {
+          role: op.role,
+          name: op.name,
+          detail: op.detail,
+          protocol: op.protocol,
+          kind: op.kind,
+          icon: DEVICE_ICONS[op.kind],
+          tone: op.kind === "gateway" ? "primary" : "secondary",
+        };
+        next = { ...next, devices: [...next.devices, device] };
+        break;
+      }
+      case "updateDevice": {
+        next = {
+          ...next,
+          devices: next.devices.map((device, position) =>
+            position + 1 === op.index
+              ? {
+                  ...device,
+                  ...(op.role !== undefined ? { role: op.role } : {}),
+                  ...(op.name !== undefined ? { name: op.name } : {}),
+                  ...(op.detail !== undefined ? { detail: op.detail } : {}),
+                  ...(op.protocol !== undefined ? { protocol: op.protocol } : {}),
+                  ...(op.kind !== undefined ? { kind: op.kind } : {}),
+                }
+              : device,
+          ),
+        };
+        break;
+      }
+      case "deleteDevice": {
+        next = { ...next, devices: next.devices.filter((_, position) => position + 1 !== op.index) };
         break;
       }
       case "deleteCheckpoint": {

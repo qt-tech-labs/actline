@@ -41,6 +41,24 @@ export const DEFAULT_SETTINGS = {
   mqtt: { host: "mqtt.actline.io", port: 8883 },
 } as const;
 
+/** What a hub that has not paired yet shows: no device facts, the default settings. */
+export function emptyHubConfig(): HubConfig {
+  return {
+    chip: "—",
+    firmwareVersion: "—",
+    flash: "—",
+    bleReady: false,
+    bootedAt: new Date(0).toISOString(),
+    wifi: { ssid: "—", rssiDbm: 0, ip: "—", mac: "—" },
+    mqtt: { ...DEFAULT_SETTINGS.mqtt, clientId: "—", auth: "tls" },
+    pins: [],
+    cameraUrl: "",
+    telemetryIntervalSec: DEFAULT_SETTINGS.telemetryIntervalSec,
+    lightSleepLowBattery: DEFAULT_SETTINGS.lightSleepLowBattery,
+    valveWatchdog: DEFAULT_SETTINGS.valveWatchdog,
+  };
+}
+
 /** The editable subset of {@link HubConfig}; the PATCH body of `/projects/{id}/hub`. */
 export const hubSettingsSchema = z.object({
   telemetryIntervalSec: z.union([z.literal(15), z.literal(30), z.literal(60)]),

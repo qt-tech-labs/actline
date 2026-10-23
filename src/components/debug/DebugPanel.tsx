@@ -80,23 +80,20 @@ function Turn({ turn, index }: { turn: DebugTurn; index: number }) {
     <details className="rounded-lg border border-surface-variant p-2" open={failed || index === 0}>
       <summary className="cursor-pointer text-body-sm text-on-surface">
         Turn {index + 1}
-        {turn.followUp ? " (repair)" : ""} · {(turn.durationMs / 1000).toFixed(1)}s · {turn.calls.length} tool calls
+        {turn.followUp ? " (repair)" : ""} · {(turn.durationMs / 1000).toFixed(1)}s ·{" "}
+        {turn.error !== null ? "failed" : turn.json !== null ? "JSON document" : turn.parseError ?? "no JSON"}
       </summary>
       <div className="mt-2 flex flex-col gap-2">
         {turn.request ? <RequestBlock request={turn.request} /> : null}
         {failed ? <Block label="Error" tone="failed">{turn.errorDetail ?? turn.error ?? ""}</Block> : null}
         <JsonBlock label="Response" value={turn.raw} tone={failed ? undefined : "ok"} />
-        <JsonBlock
-          label={`Parsed tool calls (${turn.calls.length})`}
-          value={turn.calls.map((c) => ({ id: c.id, name: c.name, arguments: c.arguments, malformed: c.malformed }))}
-        />
-        {turn.replayedResults.length > 0 ? <JsonBlock label="Answers replayed to the model" value={turn.replayedResults} /> : null}
+        <JsonBlock label="Extracted JSON document" value={turn.json ?? turn.parseError ?? "none"} />
+        {turn.problems.length > 0 ? <Block label="Problems sent back to the model">{turn.problems.join("\n")}</Block> : null}
         <details>
           <summary className="cursor-pointer text-body-sm text-on-surface-variant">Prompts as plain text</summary>
           <div className="mt-2 flex flex-col gap-2">
             <Block label="System prompt">{turn.system}</Block>
             <Block label="User prompt">{turn.user}</Block>
-            <Block label="Tools">{turn.toolNames.join(", ")}</Block>
           </div>
         </details>
       </div>
@@ -209,12 +206,21 @@ export function DebugPanel() {
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="interactive fixed left-3 top-[4.5rem] z-[110] flex items-center gap-2 rounded-full bg-inverse-surface px-4 py-2 text-body-sm text-inverse-on-surface shadow-lg"
+        className="interactive fixed left-3 top-[4.5rem] z-[110] flex items-center gap-1.5 rounded-full bg-inverse-surface px-3 py-2 text-body-sm text-inverse-on-surface shadow-lg"
       >
-        {open ? "Hide debug" : "Debug"}
-        <span className="rounded-full bg-white/20 px-2 text-label-sm">{runs.length}</span>
-        {failed > 0 ? <span className="rounded-full bg-[#dc2626] px-2 text-label-sm text-white">{failed} failed</span> : null}
+        <span aria-hidden className="text-base leading-none">🐞</span>
+        <span className="sr-only">{open ? "Hide debug" : "Show debug"}</span>
+        {failed > 0 ? (
+          <span
+            aria-label={`${failed} failed`}
+            className="min-w-5 rounded-full bg-[#dc2626] px-1.5 text-center text-label-sm text-white"
+          >
+            {failed}
+          </span>
+        ) : null}
       </button>
+
+      {open ? <div className="fixed inset-0 z-[90]" aria-hidden onClick={() => setOpen(false)} /> : null}
 
       <aside
         aria-hidden={!open}

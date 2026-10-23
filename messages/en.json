@@ -33,6 +33,13 @@
     "modeSwitch": "Switch working mode"
   },
   "switcher": {
+    "delete": "Delete project",
+    "deleteTitle": "Delete this project?",
+    "deleteBody": "“{name}” and all its plan, supplies, expenses and notes will be removed for good.",
+    "confirm": "Delete",
+    "cancel": "Cancel",
+    "deleted": "Project deleted",
+    "deleteFailed": "Could not delete the project",
     "label": "Switch project",
     "heading": "Your projects"
   },
@@ -48,6 +55,7 @@
     "connectIotHint": "This project doesn't use IoT yet. Enable it to track sensors, camera and irrigation valves."
   },
   "timeline": {
+    "missed": "Not marked done",
     "label": "Farming milestones",
     "prev": "View previous milestones",
     "next": "View next milestones",
@@ -130,6 +138,9 @@
     "empty": "No devices connected yet"
   },
   "day": {
+    "stepperLabel": "Change day",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
     "progress": "{day}/{total} days",
     "todayLabel": "Today",
     "dayLabel": "Day {day}",
@@ -335,7 +346,26 @@
         "configure": "Configure sensors",
         "enable": "Enable IoT for this project",
         "suggested": "AI suggests enabling IoT because this project needs environmental monitoring.",
-        "notNeeded": "This project doesn't need IoT. You can enable it later from the project screen."
+        "notNeeded": "This project doesn't need IoT. You can enable it later from the project screen.",
+        "editorTitle": "Sensors and devices of this plan",
+        "addDevice": "Add device",
+        "editDevice": "Edit device",
+        "deleteDevice": "Remove device",
+        "noDevices": "No devices yet. Add the sensors this project needs.",
+        "deviceName": "Device name",
+        "deviceRole": "Role",
+        "deviceRolePlaceholder": "e.g. SOIL",
+        "deviceProtocol": "Protocol",
+        "deviceDetail": "Details",
+        "deviceKind": "Type",
+        "save": "Save",
+        "cancel": "Cancel",
+        "kinds": {
+          "gateway": "Gateway",
+          "soil_probe": "Sensor",
+          "valve": "Valve",
+          "camera": "Camera"
+        }
       },
       "nodes": {
         "title": "Plan phases (Plan Nodes)",
@@ -353,7 +383,8 @@
         "nodeObjective": "Phase objective",
         "nodeObjectivePlaceholder": "Result to achieve by end of phase",
         "startDay": "From day",
-        "endDay": "To day"
+        "endDay": "To day",
+        "edit": "Edit phase"
       },
       "empty": {
         "state": "No draft",
@@ -382,7 +413,12 @@
         "itemCancel": "Cancel",
         "needGenerate": "Click \"Generate action plan with AI\" to build a draft, then edit it.",
         "itemEdit": "Edit action",
-        "itemDelete": "Delete action"
+        "itemDelete": "Delete action",
+        "itemDescription": "Description",
+        "itemChecklist": "Steps (one per line)",
+        "itemDay": "Day",
+        "itemSaved": "Action saved",
+        "noNodeToAdd": "Add a phase that covers this day first"
       },
       "bom": {
         "title": "Supplies to prepare in advance",

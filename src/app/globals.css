@@ -193,6 +193,13 @@
 .day-plan-frame-forward { animation: day-plan-in-forward 200ms var(--ease-out-strong) both; }
 .day-plan-frame-back { animation: day-plan-in-back 200ms var(--ease-out-strong) both; }
 
+/* The ring around the selected day breathes outward; transform + opacity only. */
+@keyframes selection-pulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+.selection-pulse { animation: selection-pulse 1800ms var(--ease-out-strong) infinite; }
+
 /* A toast enters with a short rise and fade; transform + opacity only. */
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(-8px); }

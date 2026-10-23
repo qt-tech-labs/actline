@@ -298,3 +298,10 @@ export async function updateFinance(
     .returning();
   return updated!;
 }
+
+/** Deletes a project; every table that hangs off it cascades. */
+export async function deleteProject(userId: string, projectId: string) {
+  await assertProject(userId, projectId);
+  await db.delete(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
+  return { id: projectId };
+}

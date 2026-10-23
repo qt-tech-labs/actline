@@ -2,7 +2,7 @@
 
 Turns a free-text project idea into an **actionable plan** the app can execute day by day.
 
-The plan is a tree, and the model builds it by calling tools:
+The plan is a tree, and the model builds it in **one answer** as a single JSON document:
 
 ```
 Blueprint
@@ -37,18 +37,29 @@ place and the server enforces them. The model proposes; the server disposes.
 | R8 | 3–5 risks, each a real failure mode with a mitigation. 2–5 checkpoints per node. | validator |
 | R9 | The golden time window (`goldenStart`/`goldenEnd`) describes the best time of **day 1** only. | validator |
 
-## The tools
+## The document
 
-| Tool | Creates |
-|---|---|
-| `create_node` | one node: its range, objective, checkpoints and action items |
-| `add_supply` | one bill-of-materials line |
-| `add_risk` | one risk forecast |
-| `add_device` | one predicted IoT device |
-| `finalize_plan` | the plan's identity: name, summary, tags, IoT suggestion, golden window |
+The model answers with exactly one JSON document, no prose:
 
-The model calls them in **one turn**, in parallel. The server executes each call, repairs what it
-can, and only asks the model again when a call is genuinely unusable.
+```json
+{
+  "constraints": { "totalDays": 45, "dailyMinutes": 90, "budgetVnd": 500000, "experience": "beginner" },
+  "plan": {
+    "name": "…", "summary": "…", "icon": "…", "tags": [{ "icon": "…", "label": "…", "tone": "primary" }],
+    "iotSuggested": false, "goldenStart": "06:30", "goldenEnd": "06:45",
+    "nodes":  [{ "index": 1, "title": "…", "objective": "…", "startDay": 1, "endDay": 5,
+                  "checkpoints": [{ "day": 3, "label": "…" }],
+                  "items": [{ "day": 1, "title": "…", "minutes": 20, "checklist": ["…"] }] }],
+    "supplies": [{ "name": "…", "spec": "…", "priceVnd": 40000, "buyByDay": 1 }],
+    "risks":    [{ "icon": "…", "title": "…", "body": "…", "tone": "warning" }],
+    "devices":  [{ "role": "GATEWAY", "name": "…", "icon": "…", "protocol": "…", "kind": "gateway" }]
+  }
+}
+```
+
+The server parses the document, repairs what it can (day ranges, minutes, icons, prices), and only
+asks the model again — once, with the full problem list — when a piece genuinely cannot be used. A
+truncated or prose-wrapped answer is likewise fed back, not thrown away.
 
 ## The envelope
 

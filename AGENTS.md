@@ -94,21 +94,25 @@ The plan is a **tree**: a blueprint holds **nodes** (a range of days + one objec
 holds **items** (one action item, pinned to a day). A day with no item is a valid state.
 
 - **The app never talks to a model vendor.** `src/server/ai/architect.ts` is the interface: an
-  `Architect` runs one turn with a system prompt, a user turn and a tool list, and answers with the
-  tool calls the model made. Everything else — the prompts, the tools, the validation, the repair
-  turn — belongs to the plan-craft skill and is shared by every engine.
+  `Architect` runs one turn with a system prompt and a user turn and answers with one JSON document
+  (extracted from the prose; an unusable answer gets one correction turn fed with the problems).
+  Everything else — the prompts, the document schema, the validation, the correction turn — belongs
+  to the plan-craft skill and is shared by every engine.
 - **The engines are implementations** (`src/server/ai/architects/`): `gemini.ts` (the hosted API,
-  the conversation lives on its side) and `local.ts` (any server that speaks the OpenAI Responses
-  API — llama.cpp does — with the whole turn replayed). A new engine is one file plus one line in
+  the conversation lives on its side), `openrouter.ts` and `local.ts` (any server that speaks the
+  OpenAI Responses API — llama.cpp does — with the whole exchange replayed). A new engine is one
+  file plus one line in
   `architects/index.ts`. `AI_PLAN_ENGINE` picks the engine, or a list (`local,gemini`) to try in
   order; `template` always uses the deterministic engine.
-- The model crafts the plan by calling five tools (`create_node`, `add_supply`, `add_risk`,
-  `add_device`, `finalize_plan`) in **one turn**. The server validates and repairs every call; a
-  rejected call gets an error back and may be re-emitted in a second turn. The rules live in
-  `src/server/ai/skills/plan-craft/SKILL.md`; the tool schemas and their Zod twins are in `tools.ts`.
+- The model crafts the plan by answering with **one JSON document** — the knobs it proposes
+  (`constraints`) next to the whole plan (`nodes`, `supplies`, `risks`, `devices`, the plan's
+  identity). The server validates and repairs every piece; what it cannot repair becomes a problem
+  list and the model re-emits the whole document in a second turn. The rules live in
+  `src/server/ai/skills/plan-craft/SKILL.md`; the document's Zod schemas are in `plan-schema.ts`,
+  the checks in `validate.ts`.
 - **The knobs are the AI's to choose.** `BlueprintParams` fields are `null` when the user left them
-  open; the model proposes them with the `propose_constraints` tool (a first, small turn) and the
-  plan is built with those values. Whatever the user set by hand always wins.
+  open; the model proposes them inside the plan document and plans against them in the same breath.
+  Whatever the user set by hand always wins.
 - **`src/lib/blueprint.ts#normalizeBlueprint` is the single place that guarantees the plan's
   invariants** (nodes tile the project, items stay inside their node, a day never exceeds the daily
   time, the BOM fits the budget). If you add a field to the plan, normalise it there — the same pure
@@ -175,3 +179,17 @@ holds **items** (one action item, pinned to a day). A day with no item is a vali
   let the mockups' classes into the production CSS.
 - No CI, no deploy config, no pre-commit hooks in this repo — don't wait for a pipeline to tell you
   something is broken.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+
+Rules:
+- When graphify-out/graph.json exists, run `graphify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.

@@ -34,6 +34,8 @@ export type TimelineNode = {
   kind: "standard" | "shopping" | "target";
   isMinor: boolean;
   state: "done" | "today" | "upcoming";
+  /** The day has passed but its plan was never marked completed. */
+  missed: boolean;
   /** Calendar date of the node (yyyy-mm-dd). */
   date: string;
 };

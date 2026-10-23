@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import { getCurrentUser } from "@/server/auth";
 import { listProjects } from "@/server/services/projects";
 import { LocaleSwitcher } from "./LocaleSwitcher";
+import { DeleteProjectButton } from "./DeleteProjectButton";
 import { ProjectSwitcher } from "./ProjectSwitcher";
 
 const NAV = [
@@ -54,6 +55,7 @@ export async function AppHeader({ projectId, mode = "default" }: { projectId: st
             >
               <Icon name="add_circle" className="text-[18px] sm:text-[20px]" />
             </Link>
+            {projectId ? <DeleteProjectButton projectId={projectId} name={projects.find((p) => p.id === projectId)?.name ?? ""} /> : null}
           </div>
         )}
       </div>

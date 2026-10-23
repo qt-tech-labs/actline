@@ -2,7 +2,7 @@ import "server-only";
 
 import { GoogleGenAI } from "@google/genai";
 import { noteRequest } from "../../debug";
-import type { Architect, ArchitectCall, ArchitectRequest, ArchitectTurn } from "../architect";
+import { extractJson, type Architect, type ArchitectRequest, type ArchitectTurn } from "../architect";
 
 /** The model that crafts the plan. Fast enough for a full project plan. */
 export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.8-flash";
@@ -38,11 +38,47 @@ export function gemini(): GoogleGenAI {
   return client;
 }
 
+/** What an interaction looks like to this engine, as far as it cares. */
+type InteractionLike = {
+  output_text?: unknown;
+  id?: unknown;
+  steps?: {
+    type?: unknown;
+    text?: unknown;
+    content?: unknown;
+  }[];
+};
+
+/** The model's prose, from wherever the interaction chose to put it. */
+function readText(raw: unknown): string {
+  const interaction = raw as InteractionLike;
+  if (typeof interaction.output_text === "string" && interaction.output_text.trim()) return interaction.output_text;
+  const parts: string[] = [];
+  for (const step of Array.isArray(interaction.steps) ? interaction.steps : []) {
+    if (typeof step.text === "string") {
+      parts.push(step.text);
+      continue;
+    }
+    const content = step.content;
+    if (typeof content === "string") {
+      parts.push(content);
+      continue;
+    }
+    if (Array.isArray(content)) {
+      for (const block of content) {
+        const text = typeof block === "object" && block !== null ? (block as { text?: unknown }).text : block;
+        if (typeof text === "string") parts.push(text);
+      }
+    }
+  }
+  return parts.join("\n");
+}
+
 /**
  * The architect that asks the Gemini API.
  *
- * The API keeps the conversation: a follow-up turn points back at the
- * interaction before it, and the function results are the only thing sent.
+ * The API keeps the conversation: a correction turn points back at the
+ * interaction before it and the correction is the only thing sent.
  */
 export class GeminiArchitect implements Architect {
   readonly key = "gemini";
@@ -53,28 +89,20 @@ export class GeminiArchitect implements Architect {
     const params = {
       model: GEMINI_MODEL,
       system_instruction: request.system,
-      // A follow-up turn answers the calls of the last one; everything before
-      // it lives on Google's side.
-      input: request.results
-        ? request.results.map((result) => ({
-            type: "function_result" as const,
-            call_id: result.callId,
-            name: result.name,
-            result: result.content,
-            is_error: result.isError,
-          }))
-        : request.user,
-      tools: request.tools,
+      input: request.followUp ? request.followUp.message : request.user,
       ...(request.handle ? { previous_interaction_id: request.handle } : {}),
     };
     noteRequest(`${process.env.GEMINI_BASE_URL?.replace(/\/+$/, "") ?? "https://generativelanguage.googleapis.com"}/interactions`, params);
-    const interaction = await gemini().interactions.create(params);
+    const interaction = (await gemini().interactions.create(params)) as unknown as InteractionLike & { id: unknown };
 
-    const calls: ArchitectCall[] = [];
-    for (const step of interaction.steps) {
-      if (step.type !== "function_call") continue;
-      calls.push({ id: step.id, name: step.name, arguments: step.arguments });
-    }
-    return { calls, handle: interaction.id, raw: interaction };
+    const text = readText(interaction);
+    const extracted = extractJson(text);
+    return {
+      text,
+      json: extracted.value,
+      parseError: extracted.error,
+      handle: typeof interaction.id === "string" ? interaction.id : undefined,
+      raw: interaction,
+    };
   }
 }

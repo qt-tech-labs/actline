@@ -4,14 +4,25 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
+import { nodeForDay } from "@/lib/blueprint";
 import type { Blueprint } from "@/lib/types";
 import { useNewProject } from "./NewProjectProvider";
 
 /** The nodes of the plan: a group of work with a time range and an objective. */
 export function NodeGrid({ blueprint }: { blueprint: Blueprint }) {
   const t = useTranslations("newProject");
-  const { applyOps, editing, blueprintId } = useNewProject();
+  const { applyOps, editing, blueprintId, selectedDay, selectDay } = useNewProject();
+  const currentNode = nodeForDay(blueprint, selectedDay);
   const [open, setOpen] = useState<number | null>(1);
+  const [editingNode, setEditingNode] = useState<number | null>(null);
+
+  /** A phase card opens its days: the day browser jumps to the phase's first day. */
+  const select = (index: number, startDay: number) => {
+    const reselect = currentNode?.index === index;
+    selectDay(startDay);
+    setOpen(reselect && open === index ? null : index);
+    if (!reselect) document.getElementById("day-browser")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [objective, setObjective] = useState("");
@@ -123,26 +134,29 @@ export function NodeGrid({ blueprint }: { blueprint: Blueprint }) {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {blueprint.nodes.map((node) => {
-          const active = node.index === 1;
+          const active = node.index === currentNode?.index;
           const last = node.index === blueprint.nodes.length;
           const expanded = open === node.index;
           return (
             <div
               key={node.index}
               className={cn(
-                "flex flex-col justify-between rounded-xl border p-4 transition-colors",
+                "relative flex flex-col justify-between rounded-xl border p-4 transition-colors",
                 active
                   ? "border-2 border-primary bg-surface-container-lowest shadow-sm ring-2 ring-primary/20"
                   : "border-surface-variant bg-surface-container-low hover:border-outline-variant",
                 expanded && !active && "border-outline-variant bg-surface-container-lowest",
               )}
             >
+              {/* Stretched over the whole card, so any part of it selects the phase. */}
               <button
                 type="button"
                 aria-expanded={expanded}
-                onClick={() => setOpen(expanded ? null : node.index)}
-                className="flex flex-col text-left"
-              >
+                aria-label={`${node.rangeLabel} · ${node.title}`}
+                onClick={() => select(node.index, node.startDay)}
+                className="absolute inset-0 z-0 cursor-pointer rounded-xl focus-visible:outline-2 focus-visible:outline-primary"
+              />
+              <div className="pointer-events-none relative flex flex-col text-left">
                 <div className="flex items-center justify-between">
                   <span className={cn("flex items-center gap-1.5 font-mono text-[11px]", active ? "font-bold text-primary" : "text-outline")}>
                     {active ? <span aria-hidden="true" className="size-2 rounded-full bg-primary" /> : null}
@@ -181,11 +195,36 @@ export function NodeGrid({ blueprint }: { blueprint: Blueprint }) {
                     ))}
                   </ul>
                 ) : null}
-              </button>
+              </div>
 
-              <div className="mt-4 flex items-center justify-between border-t border-surface-variant pt-3 text-body-sm">
-                <span className="font-mono text-[11px] text-outline">{t("blueprint.nodes.items", { count: node.items.length })}</span>
+              {editingNode === node.index ? (
+                <NodeEditForm
+                  node={node}
+                  totalDays={blueprint.totalDays}
+                  disabled={editing || !blueprintId}
+                  onCancel={() => setEditingNode(null)}
+                  onSave={async (values) => {
+                    await applyOps([{ op: "updateNode", index: node.index, ...values }]);
+                    setEditingNode(null);
+                  }}
+                />
+              ) : null}
+
+              <div className="relative mt-4 flex items-center justify-between border-t border-surface-variant pt-3 text-body-sm">
+                <span className="pointer-events-none font-mono text-[11px] text-outline">
+                  {t("blueprint.nodes.items", { count: node.items.length })}
+                </span>
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingNode(editingNode === node.index ? null : node.index)}
+                    disabled={editing || !blueprintId}
+                    title={t("blueprint.nodes.edit")}
+                    aria-label={t("blueprint.nodes.edit")}
+                    className="flex size-7 items-center justify-center rounded-lg border border-surface-variant text-outline transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+                  >
+                    <Icon name="edit_note" className="text-[16px]" />
+                  </button>
                   <button
                     type="button"
                     onClick={() => void removeNode(node.index)}
@@ -196,21 +235,10 @@ export function NodeGrid({ blueprint }: { blueprint: Blueprint }) {
                   >
                     <Icon name="delete" className="text-[16px]" />
                   </button>
-                  {expanded ? (
-                    <span className="flex items-center text-xs font-bold text-primary">
-                      {t("blueprint.nodes.hide")}
-                      <Icon name="expand_more" className="ml-0.5 text-[14px]" />
-                    </span>
-                  ) : active ? (
-                    <span className="flex items-center text-xs font-bold text-primary">
-                      {t("blueprint.nodes.details")}
-                      <Icon name="chevron_right" className="ml-0.5 text-[14px]" />
-                    </span>
-                  ) : (
-                    <span title={t("blueprint.nodes.locked")} className="flex items-center text-outline">
-                      <Icon name="lock_clock" className="text-[16px]" />
-                    </span>
-                  )}
+                  <span className="pointer-events-none flex items-center text-xs font-bold text-primary">
+                    {expanded ? t("blueprint.nodes.hide") : t("blueprint.nodes.details")}
+                    <Icon name={expanded ? "expand_more" : "chevron_right"} className="ml-0.5 text-[14px]" />
+                  </span>
                 </div>
               </div>
             </div>
@@ -218,5 +246,69 @@ export function NodeGrid({ blueprint }: { blueprint: Blueprint }) {
         })}
       </div>
     </div>
+  );
+}
+
+/** Inline form to change a phase's name, objective and day range. */
+function NodeEditForm({
+  node,
+  totalDays,
+  disabled,
+  onSave,
+  onCancel,
+}: {
+  node: Blueprint["nodes"][number];
+  totalDays: number;
+  disabled: boolean;
+  onSave: (values: { title: string; objective: string; startDay: number; endDay: number }) => void | Promise<void>;
+  onCancel: () => void;
+}) {
+  const t = useTranslations("newProject");
+  const [title, setTitle] = useState(node.title);
+  const [objective, setObjective] = useState(node.objective);
+  const [startDay, setStartDay] = useState(node.startDay);
+  const [endDay, setEndDay] = useState(node.endDay);
+  const field =
+    "rounded-lg border border-surface-variant bg-surface px-3 py-2 text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary";
+
+  return (
+    <form
+      className="relative mt-3 flex flex-col gap-2 rounded-lg border border-surface-variant bg-surface-container-low p-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (title.trim()) void onSave({ title: title.trim(), objective: objective.trim(), startDay, endDay: Math.max(endDay, startDay) });
+      }}
+    >
+      <label className="flex flex-col gap-1 font-mono text-label-sm text-on-surface-variant">
+        {t("blueprint.nodes.nodeTitle")}
+        <input value={title} onChange={(event) => setTitle(event.target.value)} className={field} autoFocus />
+      </label>
+      <label className="flex flex-col gap-1 font-mono text-label-sm text-on-surface-variant">
+        {t("blueprint.nodes.nodeObjective")}
+        <textarea rows={2} value={objective} onChange={(event) => setObjective(event.target.value)} className={field} />
+      </label>
+      <div className="flex items-end gap-2">
+        <label className="flex flex-col gap-1 font-mono text-label-sm text-on-surface-variant">
+          {t("blueprint.nodes.startDay")}
+          <input type="number" min={1} max={totalDays} value={startDay} onChange={(event) => setStartDay(Number(event.target.value))} className={`${field} w-20 font-mono`} />
+        </label>
+        <label className="flex flex-col gap-1 font-mono text-label-sm text-on-surface-variant">
+          {t("blueprint.nodes.endDay")}
+          <input type="number" min={1} max={totalDays} value={endDay} onChange={(event) => setEndDay(Number(event.target.value))} className={`${field} w-20 font-mono`} />
+        </label>
+      </div>
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className="rounded-lg border border-surface-variant px-3 py-1.5 text-body-sm text-on-surface">
+          {t("blueprint.day.itemCancel")}
+        </button>
+        <button
+          type="submit"
+          disabled={disabled || !title.trim()}
+          className="rounded-lg bg-primary px-3 py-1.5 text-title-sm text-on-primary interactive hover:bg-primary-container disabled:opacity-60"
+        >
+          {t("blueprint.day.itemSave")}
+        </button>
+      </div>
+    </form>
   );
 }

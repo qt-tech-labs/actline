@@ -11,17 +11,75 @@ export type PlanCraftEnvelope = BlueprintParams & {
 export type PlanCraftConstraints = BlueprintConstraints;
 
 const EXPERIENCE_NOTE: Record<BlueprintExperience, string> = {
-  beginner:
-    "Người dùng mới bắt đầu: mỗi hành động cần một checklist các bước nhỏ và một câu giải thích vì sao quan trọng.",
+  beginner: "Người dùng mới bắt đầu: mỗi hành động cần một checklist các bước nhỏ và một câu giải thích vì sao quan trọng.",
   basic: "Người dùng đã có kinh nghiệm cơ bản: mô tả ngắn gọn, checklist chỉ khi thật sự cần.",
   pro: "Người dùng lành nghề: hành động dạng gọn dấu động từ, không checklist, không giải thích thừa.",
 };
 
+/** The shape of the answer: one JSON document with the knobs and the plan. */
+export const DOCUMENT_EXAMPLE = `{
+  "constraints": {
+    "totalDays": 45,
+    "dailyMinutes": 90,
+    "budgetVnd": 500000,
+    "experience": "beginner",
+    "rationale": "một câu giải thích vì sao chọn các thông số này"
+  },
+  "plan": {
+    "name": "Tên dự án, 3-10 từ, dạng danh từ",
+    "summary": "Tóm tắt kế hoạch trong 1-2 câu, bằng tiếng Việt.",
+    "icon": "psychiatry",
+    "tags": [{ "icon": "check_circle", "label": "nhãn 1-3 từ", "tone": "primary" }],
+    "iotSuggested": false,
+    "goldenStart": "06:30",
+    "goldenEnd": "06:45",
+    "nodes": [
+      {
+        "index": 1,
+        "title": "Tên giai đoạn, 2-8 từ, dạng danh từ",
+        "objective": "Ý nghĩa của khoảng ngày này: kết quả đạt được khi kết thúc giai đoạn.",
+        "startDay": 1,
+        "endDay": 5,
+        "successCriteria": "Tiêu chí để biết giai đoạn đã hoàn thành.",
+        "checkpoints": [{ "day": 3, "label": "Nhãn ngắn của mốc kiểm tra" }],
+        "items": [
+          {
+            "day": 1,
+            "title": "Tên hành động, bắt đầu bằng động từ",
+            "description": "Mô tả ngắn một câu.",
+            "minutes": 20,
+            "rationale": "Một câu giải thích vì sao hành động này quan trọng.",
+            "checklist": ["Một bước nhỏ"],
+            "requiresPhoto": false,
+            "photoTitle": null,
+            "photoHint": null
+          }
+        ]
+      }
+    ],
+    "supplies": [
+      { "name": "Chậu thùng 20L", "spec": "Quy cách: kích thước, chất liệu, số lượng", "priceVnd": 40000, "buyByDay": 1 }
+    ],
+    "risks": [
+      { "icon": "warning", "title": "Tên rủi ro, ngắn gọn", "body": "Rủi ro và cách phòng tránh, 1-3 câu.", "tone": "warning" }
+    ],
+    "devices": [
+      { "role": "GATEWAY", "name": "Tên thiết bị", "detail": "Chức năng ngắn gọn", "icon": "hub", "protocol": "Wi-Fi", "kind": "gateway" }
+    ]
+  }
+}`;
+
 /**
- * The first question: how long, how much time, how much money, how experienced.
- * The answer depends on the topic, so the model proposes it.
+ * The system instruction of the plan-craft skill: the role, the shape of the
+ * answer and the rules the model has to follow. Every rule here is also
+ * checked by `validate.ts` on the server — the prompt makes the model aim for
+ * it, the validator makes sure it happened.
+ *
+ * The knobs live inside the answer: the model proposes the ones the user left
+ * open and plans against them in the same breath, so the plan is
+ * self-consistent with the limits it invented.
  */
-export function buildConstraintsPrompt(envelope: PlanCraftEnvelope): string {
+export function buildSystemPrompt(envelope: PlanCraftEnvelope): string {
   const fixed: string[] = [];
   if (envelope.totalDays !== null) fixed.push(`- Số ngày: người dùng đã chốt ${envelope.totalDays} ngày.`);
   if (envelope.dailyMinutes !== null) fixed.push(`- Thời gian mỗi ngày: người dùng đã chốt ${envelope.dailyMinutes} phút.`);
@@ -30,32 +88,6 @@ export function buildConstraintsPrompt(envelope: PlanCraftEnvelope): string {
 
   return [
     `Bạn là "Actline Plan Architect": chuyên gia lập kế hoạch hành động cho dự án nhiều ngày, bất kể chủ đề là gì (làm vườn ban công, chế robot, làm bánh mì sourdough, cải tạo nhà, huấn luyện chạy...).`,
-    "",
-    "Nhiệm vụ lúc này chỉ là chọn bốn thông số cho kế hoạch. Chúng phụ thuộc vào bản chất của dự án:",
-    "- Một cuộc cải tạo nhà cần hàng chục tới hàng trăm ngày; một món bánh sourdough cần 7-14 ngày.",
-    "- Dự án kỹ thuật cần ít thời gian mỗi ngày nhưng nhiều ngày; làm vườn cần ngắn mỗi ngày nhưng kéo dài.",
-    "- Ngân sách phải đủ để mua vật tư thật ở Việt Nam, không hụt và không thừa.",
-    "- Trình độ quyết định độ chi tiết của các bước.",
-    "",
-    "Gọi tool `propose_constraints` để trả lời. Không viết lời giải thích dài.",
-    ...(fixed.length > 0 ? ["", "Những gì người dùng ĐÃ chốt, không được thay đổi:", ...fixed] : []),
-  ].join("\n");
-}
-
-/** The user turn for the constraints question. */
-export function buildConstraintsUserPrompt(envelope: PlanCraftEnvelope): string {
-  return ["Ý tưởng dự án:", envelope.prompt.trim(), "", "Hãy đề xuất thông số phù hợp."].join("\n");
-}
-
-/**
- * The system instruction of the plan-craft skill: the role, the plan shape and
- * the rules the model has to follow. Every rule here is also checked by
- * `validate.ts` on the server — the prompt makes the model aim for it, the
- * validator makes sure it happened.
- */
-export function buildSystemPrompt(constraints: PlanCraftConstraints): string {
-  return [
-    `Bạn là "Actline Plan Architect": chuyên gia lập kế hoạch hành động cho dự án nhiều ngày, bất kể chủ đề là gì (làm vườn ban công, chế robot, làm bánh mì sourdough, huấn luyện chạy, cải tạo nhà...).`,
     "",
     "## Cấu trúc kế hoạch",
     "",
@@ -68,48 +100,51 @@ export function buildSystemPrompt(constraints: PlanCraftConstraints): string {
     "",
     "## Quy tắc bắt buộc",
     "",
-    `R1. Tạo 6-10 giai đoạn. Các khoảng ngày phải nối tiếp từ ngày 1 đến ngày ${constraints.totalDays}, không hở và không chồng.`,
-    `R2. Mỗi hành động ghim vào một ngày nằm trong khoảng của giai đoạn. Tổng thời lượng của một ngày không được vượt quá ${constraints.dailyMinutes} phút.`,
-    "R3. Không bịa việc để lấp ngày trống. Ưu tiên để trống rồi nói rõ trong objective.",
-    `R4. Danh mục vật tư tính bằng đồng (VND), giá thực tế tại Việt Nam, tổng không vượt quá ${constraints.budgetVnd.toLocaleString("en-US")} đồng.`,
-    "R5. Tên icon chỉ được dùng từ danh sách icon của ứng dụng (xem bên dưới). Icon lạ sẽ không hiển thị.",
-    "R6. Mọi nội dung người dùng đọc được phải bằng tiếng Việt. Giá là số nguyên tính bằng đồng.",
-    "R7. Chỉ gợi ý IoT khi dự án thực sự cần cảm biến (vườn, nhà kính, bể cá, hoặc người dùng nhắc tới cảm biến, tưới tự động, camera). Không gợi ý cho robot, cải tạo, hay kế hoạch tập luyện.",
-    "R8. Dự báo 3-5 rủi ro thật kèm cách phòng tránh. Mỗi giai đoạn có 2-5 mốc kiểm tra.",
-    "R9. Khung giờ vàng (goldenStart/goldenEnd) mô tả khung giờ đẹp nhất của NGÀY 1, không dùng cho ngày khác.",
+    "R1. Trả lời bằng đúng MỘT tài liệu JSON, như khung bên dưới: `constraints` rồi `plan`. Không văn xuôi, không giải thích ngoài tài liệu.",
+    "R2. Trong `constraints`, đề xuất bốn thông số phù hợp với bản chất của dự án: một cuộc cải tạo nhà cần hàng chục tới hàng trăm ngày; món bánh sourdough cần 7-14 ngày; dự án kỹ thuật cần ít phút mỗi ngày nhưng nhiều ngày; ngân sách đủ để mua vật tư thật ở Việt Nam. Những gì người dùng ĐÃ chốt (nếu có bên dưới) không được thay đổi.",
+    "R3. Cấp 6-10 giai đoạn. Các khoảng ngày phải nối tiếp từ ngày 1 đến ngày `constraints.totalDays`, không hở và không chồng.",
+    "R4. Mỗi hành động ghim vào một ngày nằm trong khoảng của giai đoạn. Tổng thời lượng của một ngày không được vượt quá `constraints.dailyMinutes` phút.",
+    `R5. Danh mục vật tư tính bằng đồng (VND), giá thực tế tại Việt Nam, tổng không vượt quá \`constraints.budgetVnd\` đồng. \`buyByDay\` là ngày phải mua, không muộn hơn ngày bắt đầu dùng.`,
+    "R6. Tên icon chỉ được dùng từ danh sách icon của ứng dụng (xem bên dưới). Icon lạ sẽ không hiển thị.",
+    "R7. Mọi nội dung người dùng đọc được phải bằng tiếng Việt. Giá là số nguyên tính bằng đồng.",
+    "R8. Chỉ điền IoT khi dự án thực sự cần cảm biến (vườn, nhà kính, bể cá, hoặc người dùng nhắc tới cảm biến, tưới tự động, camera): `iotSuggested: true` và `devices` chỉ chứa thiết bị thật. Không có thì `iotSuggested: false` và `devices` mảng rỗng — không dành cho robot, cải tạo, hay kế hoạch tập luyện.",
+    "R9. 3-5 rủi ro thật kèm cách phòng tránh. Mỗi giai đoạn có 2-5 mốc kiểm tra (checkpoints).",
+    "R10. Khung giờ vàng (goldenStart/goldenEnd) mô tả khung giờ đẹp nhất của NGÀY 1, định dạng HH:MM, không dùng cho ngày khác.",
     "",
-    "## Kinh nghiệm người dùng",
+    "## Trình độ người dùng",
     "",
-    EXPERIENCE_NOTE[constraints.experience],
+    "`constraints.experience` quyết định độ chi tiết:",
+    ...Object.entries(EXPERIENCE_NOTE).map(([level, note]) => `- "${level}": ${note}`),
     "",
     "## Icon được phép dùng",
     "",
     ICON_NAMES.join(", "),
     "",
-    "## Cách trả lời",
+    "## Khung tài liệu JSON",
     "",
-    "Gọi tool để dựng kế hoạch, đừng mô tả bằng lời. Một lần gọi được nhiều tool song song:",
-    "1. `create_node` cho từng giai đoạn, kèm hành động và mốc kiểm tra.",
-    "2. `add_supply` cho từng mục vật tư.",
-    "3. `add_risk` cho từng rủi ro.",
-    "4. `add_device` chỉ khi dự án cần cảm biến.",
-    "5. `finalize_plan` để chốt tên, tóm tắt, nhãn, icon và gợi ý IoT.",
+    DOCUMENT_EXAMPLE,
     "",
-    "Nếu ứng dụng báo một tool call không hợp lệ, hãy gọi lại tool đó với đối số đã sửa.",
+    ...(fixed.length > 0 ? ["## Những gì người dùng ĐÃ chốt, không được thay đổi", "", ...fixed, ""] : []),
+    "Nếu ứng dụng báo tài liệu có lỗi, hãy trả lại TOÀN BỘ tài liệu JSON với các lỗi đã sửa.",
   ].join("\n");
 }
 
-/** The user turn: the idea plus the constraints the plan is built with. */
-export function buildUserPrompt(prompt: string, constraints: PlanCraftConstraints): string {
+/** The user turn: the idea (the knobs, if the user set them, say so themselves). */
+export function buildUserPrompt(envelope: PlanCraftEnvelope): string {
   return [
     "Ý tưởng dự án:",
-    prompt.trim(),
+    envelope.prompt.trim(),
     "",
-    "Ràng buộc:",
-    `- Tổng thời lượng: ${constraints.totalDays} ngày`,
-    `- Thời gian rảnh mỗi ngày: ${constraints.dailyMinutes} phút`,
-    `- Ngân sách tối đa: ${constraints.budgetVnd.toLocaleString("en-US")} đồng`,
+    "Hãy đề xuất `constraints` phù hợp và dựng kế hoạch theo các quy tắc trên.",
+  ].join("\n");
+}
+
+/** The correction turn: the problems found in the last answer, verbatim. */
+export function buildRepairPrompt(problems: string[]): string {
+  return [
+    "Tài liệu JSON bạn trả về trước đó có các lỗi sau:",
+    ...problems.map((problem) => `- ${problem}`),
     "",
-    "Hãy dựng kế hoạch theo các quy tắc trên.",
+    "Hãy trả lại TOÀN BỘ tài liệu JSON đã sửa đúng cấu trúc, không thêm lời giải thích.",
   ].join("\n");
 }

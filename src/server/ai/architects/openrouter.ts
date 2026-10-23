@@ -1,13 +1,13 @@
 import "server-only";
 
 import { noteRequest } from "../../debug";
-import type { Architect, ArchitectCall, ArchitectRequest, ArchitectTurn } from "../architect";
+import { extractJson, type Architect, type ArchitectRequest, type ArchitectTurn } from "../architect";
 
 /**
  * The architect that asks OpenRouter.
  *
- * OpenRouter's Responses API keeps no conversation: a
- * follow-up turn replays the question, the calls and the answers.
+ * OpenRouter's Responses API keeps no conversation: a correction turn replays
+ * the question, the model's answer and the server's problems.
  */
 
 /** The model that crafts the plan. */
@@ -24,64 +24,51 @@ export function hasOpenRouterKey(): boolean {
   return Boolean(process.env.OPENROUTER_API_KEY);
 }
 
-type InputItem =
-  | { role: "user"; content: string }
-  | { type: "function_call"; call_id: string; name: string; arguments: string }
-  | { type: "function_call_output"; call_id: string; output: string };
+type InputItem = { role: "user" | "assistant"; content: string };
 
-type ResponsesPayload = {
-  output?: { type?: string; id?: string; call_id?: string; name?: string; arguments?: unknown }[];
-  error?: { code?: number | string; message?: string };
-};
-
-/** The first turn is the question; a follow-up replays the question, the calls and the answers. */
+/** The first turn is the question; a correction replays it with the problems. */
 function buildInput(request: ArchitectRequest): string | InputItem[] {
-  if (!request.results || request.results.length === 0) return request.user;
+  if (!request.followUp) return request.user;
   return [
     { role: "user", content: request.user },
-    ...(request.calls ?? []).map((call) => ({
-      type: "function_call" as const,
-      call_id: call.id,
-      name: call.name,
-      arguments: call.raw ?? JSON.stringify(call.arguments),
-    })),
-    ...request.results.map((result) => ({
-      type: "function_call_output" as const,
-      call_id: result.callId,
-      output: result.content,
-    })),
+    { role: "assistant", content: request.followUp.text },
+    { role: "user", content: request.followUp.message },
   ];
 }
 
-/** The arguments of a call: the model sends them as text. */
-function parseArguments(raw: string): { value: Record<string, unknown>; malformed: boolean } {
-  if (!raw.trim()) return { value: {}, malformed: false };
-  try {
-    const value: unknown = JSON.parse(raw);
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      return { value: value as Record<string, unknown>, malformed: false };
-    }
-  } catch {
-    // Falls through to malformed.
-  }
-  return { value: {}, malformed: true };
-}
+type ResponsesPayload = {
+  output_text?: string;
+  output?: {
+    type?: string;
+    id?: string;
+    text?: string;
+    content?: unknown;
+  }[];
+  error?: { code?: number | string; message?: string };
+};
 
-function readCalls(payload: ResponsesPayload): ArchitectCall[] {
-  const calls: ArchitectCall[] = [];
+/** The model's prose: every Responses server writes it somewhere slightly different. */
+function readText(payload: ResponsesPayload): string {
+  if (typeof payload.output_text === "string" && payload.output_text.trim()) return payload.output_text;
+  const parts: string[] = [];
   for (const item of Array.isArray(payload.output) ? payload.output : []) {
-    if (item?.type !== "function_call") continue;
-    const raw = typeof item.arguments === "string" ? item.arguments : "";
-    const parsed = parseArguments(raw);
-    calls.push({
-      id: item.call_id ?? item.id ?? "",
-      name: item.name ?? "",
-      arguments: parsed.value,
-      ...(parsed.malformed ? { malformed: true } : {}),
-      ...(raw ? { raw } : {}),
-    });
+    if (typeof item.text === "string") {
+      parts.push(item.text);
+      continue;
+    }
+    const content = item.content;
+    if (typeof content === "string") {
+      parts.push(content);
+      continue;
+    }
+    if (Array.isArray(content)) {
+      for (const block of content) {
+        const text = typeof block === "object" && block !== null ? (block as { text?: unknown }).text : block;
+        if (typeof text === "string") parts.push(text);
+      }
+    }
   }
-  return calls;
+  return parts.join("\n");
 }
 
 /** The architect that asks OpenRouter. */
@@ -99,7 +86,7 @@ export class OpenRouterArchitect implements Architect {
       model: OPENROUTER_MODEL,
       instructions: request.system,
       input: buildInput(request),
-      tools: request.tools.map(({ name, description, parameters }) => ({ type: "function", name, description, parameters })),
+      text: { format: { type: "json_object" } },
     };
     noteRequest(url, body);
     const response = await fetch(url, {
@@ -133,6 +120,8 @@ export class OpenRouterArchitect implements Architect {
       const detail = payload.error?.message ?? `HTTP ${response.status}`;
       throw new Error(`OpenRouter refused the turn: ${detail}`, { cause: payload });
     }
-    return { calls: readCalls(payload), raw: payload };
+    const prose = readText(payload);
+    const extracted = extractJson(prose);
+    return { text: prose, json: extracted.value, parseError: extracted.error, raw: payload };
   }
 }

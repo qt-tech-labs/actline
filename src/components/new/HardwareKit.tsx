@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import type { Blueprint } from "@/lib/types";
+import { DeviceEditor } from "./DeviceEditor";
 import { IotSwitch } from "./IotSwitch";
 
 /** Predicted IoT kit. IoT stays a suggestion: the user can decline it (FR-9.2). */
@@ -30,14 +31,7 @@ export async function HardwareKit({ blueprint, iotEnabled }: { blueprint: Bluepr
             <span aria-hidden="true" className={cn("size-2 rounded-full", iotEnabled ? "glow-ok bg-ok" : "bg-outline-variant")} />
             {iotEnabled ? t("blueprint.hardware.ready") : t("blueprint.hardware.off")}
           </span>
-          <button
-            type="button"
-            aria-disabled="true"
-            title={t("blueprint.hardware.configure")}
-            className="cursor-not-allowed rounded-lg border border-surface-variant bg-surface-container px-2.5 py-1 font-mono text-[11px] font-medium text-on-surface transition-colors"
-          >
-            {t("blueprint.hardware.configure")}
-          </button>
+          <DeviceEditor blueprint={blueprint} />
         </div>
       </div>
 
